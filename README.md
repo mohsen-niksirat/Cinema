@@ -191,6 +191,6 @@ const OMDB='https://www.omdbapi.com/?apikey=***';
 
 **ساخته شده با ❤️ نیک‌ سیرت**
 
-[![GitHub followers](https://img.shields.io/github/followers/niksiratforex-ux?style=social)](https://github.com/niksiratforex-ux)
+[![GitHub followers](https://img.shields.io/github/followers/mohsen-niksirat?style=social)](https://github.com/mohsen-niksirat)
 
 </div>
