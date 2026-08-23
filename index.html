@@ -159,6 +159,8 @@ nav{position:sticky;top:0;z-index:50;padding:10px 16px;display:flex;align-items:
 .c-row{cursor:pointer}
 .c-row:hover{border-color:var(--accent);background:rgba(229,9,20,.04)}
 .tabs{flex-wrap:wrap}
+#grid > .col-grid,#grid > .c-rows,#grid > .cb-row{grid-column:1/-1}
+.cb-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 @media(max-width:768px){.m-rows{grid-template-columns:1fr}}
 
 </style>
@@ -433,7 +435,7 @@ function cardHTML(item,idx){
   }).join('');
   const seasonCount=item.seasons?item.seasons.length:0;
   const seasonInfo=seasonCount?seasonCount+' فصل':'';
-  return'<div class="card" data-idx="'+idx+'">'+
+  return'<div class="card" data-idx="'+idx+'" data-iid="'+esc(item.imdbId)+'">'+
     '<div class="card-top">'+
       '<div class="card-poster">'+(poster?'<img src="'+poster+'" loading="lazy">':'<div class="ni">'+(item.type==='series'?'📺':'🎬')+'</div>')+'</div>'+
       '<div class="card-info">'+
@@ -917,6 +919,7 @@ function showResults(){
   try{sessionStorage.setItem('mf6data',JSON.stringify({movies:DATA.movies,series:DATA.series}))}catch(e){}
   document.getElementById('loadBox').style.display='none';
   loadPagePosters();
+  loadCSDB(); // preload CineScore db so posters/plots appear on cards immediately
   document.getElementById('resSection').style.display='block';
   renderFilters();render();
   toast(`${DATA.movies.length} فیلم و ${DATA.series.length} سریال بارگذاری شد`,'s');
@@ -947,38 +950,44 @@ async function loadPosters(count=30){
 }
 // Load posters for current page
 function loadPagePosters(){
-  const items=DATA[tab];
+  const items=DATA[tab]||[];
+  applyCSPosters();
   const start=page*PP;
   const pageItems=items.slice(start,start+PP);
-  pageItems.forEach(it=>{
-    const cs=CSMAP[it.imdbId];
-    if(cs&&cs.p){
-      const realIdx=items.indexOf(it);
-      const card=document.querySelector(".card[data-idx='"+realIdx+"'] .card-poster");
-      if(card&&!card.querySelector('img'))card.innerHTML="<img src='"+cs.p+"' loading='lazy'>";
-      const pl=document.querySelector(".card[data-idx='"+realIdx+"'] .card-plot");
-      if(pl&&cs.pl&&!pl.textContent)pl.textContent=cs.pl.length>110?cs.pl.slice(0,110)+'…':cs.pl;
-    }
-  });
   const toLoad=pageItems.filter(i=>i.imdbId&&!oc[i.imdbId]&&!CSMAP[i.imdbId]?.p);
   toLoad.forEach(async(it,idx)=>{
     await new Promise(r=>setTimeout(r,idx*150));
     await getOmdb(it.imdbId);
-    const realIdx=items.indexOf(it);
-      const card=document.querySelector(".card[data-idx='"+realIdx+"'] .card-poster");
+    const card=document.querySelector(".card[data-iid='"+it.imdbId+"'] .card-poster");
     if(card&&oc[it.imdbId]?.poster&&!card.querySelector('img')){
       card.innerHTML="<img src='"+oc[it.imdbId].poster+"' loading='lazy'>";
     }
-    const pl=document.querySelector(".card[data-idx='"+realIdx+"'] .card-plot");
+    const pl=document.querySelector(".card[data-iid='"+it.imdbId+"'] .card-plot");
     if(pl&&oc[it.imdbId]?.plot&&!pl.textContent)pl.textContent=oc[it.imdbId].plot.length>110?oc[it.imdbId].plot.slice(0,110)+'…':oc[it.imdbId].plot;
   });
 }
+
 let CSDB=null,CSMAP={},COL=null,introView='grid',activeCol=null;
+function applyCSPosters(){
+  if(!Object.keys(CSMAP).length) return;
+  document.querySelectorAll('.card').forEach(function(c){
+    var id=c.dataset.iid;
+    var cs=id?CSMAP[id]:null;
+    if(!cs) return;
+    var posterEl=c.querySelector('.card-poster');
+    if(posterEl&&!posterEl.querySelector('img')&&cs.p){
+      posterEl.innerHTML='<img src="'+cs.p+'" loading="lazy">';
+    }
+    var pl=c.querySelector('.card-plot');
+    if(pl&&cs.pl&&!pl.textContent)pl.textContent=cs.pl.length>110?cs.pl.slice(0,110)+'…':cs.pl;
+  });
+}
 async function loadCSDB(){
   if(CSDB)return CSDB;
   try{
     const r=await fetch('https://mohsen-niksirat.github.io/CineScore/public/db.json');
     if(r.ok){CSDB=await r.json();(CSDB.items||[]).forEach(x=>{if(x.i)CSMAP[x.i]=x});}
+    applyCSPosters();
   }catch(e){console.log('csdb error',e)}
   return CSDB;
 }
@@ -1085,7 +1094,7 @@ function renderColDetail(c){
     if(!local)local={title:it.t,imdbId:it.i,rating:it.r||'',year:it.y||'',type:(it.tp==='s'||it.tp==='series')?'series':'movie',links:[],seasons:[]};
     return local;
   });
-  let h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">'+
+  let h='<div class="cb-row">'+
     '<button class="btn btn-g" id="introBack">→ بازگشت به مجموعه‌ها</button>'+
     '<span style="font-size:.7rem;color:var(--text2)">'+esc(c.desc)+'</span></div>';
   h+='<div class="c-rows">'+rows.map((it,idx)=>'<div class="c-row" data-i="'+idx+'">'+rowHTML(it)+'</div>').join('')+'</div>';
