@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cinema-v5';
+const CACHE_NAME = 'cinema-v11';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -21,7 +21,12 @@ function notifyClients(){
 self.addEventListener('message', event => {
   const d = event.data || {};
   if (d.type === 'SKIP_WAITING') {
-    self.skipWaiting();
+    // Clear ALL caches inside the worker itself, then take over.
+    // Doing it here (not from the page) avoids racing with the install step.
+    event.waitUntil(
+      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+        .then(() => self.skipWaiting())
+    );
   }
 });
 

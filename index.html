@@ -666,7 +666,7 @@ async function loadSermoviePosters(items){
 // Tabs
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');
-  tab=t.dataset.t;page=0;filter="all";query="";sortBy='year';sermovieTab='all';introView='grid';activeCol=null;document.getElementById("si").value="";
+  tab=t.dataset.t;page=0;filter="all";query="";sortBy='rating';sermovieTab='all';introView='grid';activeCol=null;document.getElementById("si").value="";
   document.getElementById('filterBar').innerHTML='';
   if(tab==='sermovie'){
     document.getElementById('filterBar').innerHTML='<div class="sp"></div> در حال بارگذاری...';
@@ -1312,6 +1312,7 @@ if('serviceWorker' in navigator){
     if(apply)apply.addEventListener('click',()=>{
       const w=swReg&&(swReg.waiting||swReg.installing);
       if(w){
+        // The worker itself clears ALL caches, then activates + page reloads
         w.postMessage({type:'SKIP_WAITING'});
       }else{
         hideUpdateBanner();
