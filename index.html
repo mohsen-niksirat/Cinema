@@ -79,6 +79,7 @@ nav{position:sticky;top:0;z-index:50;padding:10px 16px;display:flex;align-items:
 @media(max-width:768px){
   nav{padding:8px 10px;gap:6px}.logo{font-size:.9rem}
   .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+  .col-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
   .card-top{padding:7px}.card-poster{width:50px;height:75px}
   .card-title{font-size:.7rem}
   .sb{max-width:180px}
@@ -154,7 +155,7 @@ nav{position:sticky;top:0;z-index:50;padding:10px 16px;display:flex;align-items:
 .m-sec{margin-top:16px;border-top:1px solid var(--border);padding-top:12px}
 .m-sec h4{font-size:.72rem;font-weight:800;color:var(--text3);margin-bottom:8px}
 /* ---- معرفی (collections) ---- */
-.col-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.col-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .col-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px;cursor:pointer;transition:.25s;display:flex;flex-direction:column}
 .col-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.35)}
 .col-emoji{font-size:1.9rem}
@@ -266,23 +267,18 @@ function toast(msg,type){
   setTimeout(function(){d.remove()},3000);
 }
 
-// OMDB API cache and fetch
+// Enrichment cache — data comes from the CineScore dataset (CSMAP)
+function csToInfo(x){
+  if(!x)return null;
+  return {poster:x.p||'',rating:x.r,votes:x.v,title:x.t,year:x.y,
+    plot:x.pl||'',genre:x.g||'',director:x.dir||'',
+    writers:x.wr||'',actors:Array.isArray(x.ac)?x.ac.join(', '):(x.ac||''),awards:x.aw||'',
+    runtime:x.rm?(x.rm+' min'):'',lang:x.lo||'',country:x.co||'',boxoffice:x.bo||''};
+}
 async function getOmdb(id){
   if(!id)return null;
   if(oc[id])return oc[id];
-  try{
-    var r=await fetch('https://www.omdbapi.com/?i='+id+'&apikey=b7570eeb');
-    if(r.ok){
-      var d=await r.json();
-      if(d.Response==='True'){
-        oc[id]={poster:d.Poster!=='N/A'?d.Poster:'',rating:d.imdbRating,votes:d.imdbVotes,title:d.Title,year:d.Year,
-          plot:d.Plot!=='N/A'?d.Plot:'',genre:d.Genre!=='N/A'?d.Genre:'',director:d.Director!=='N/A'?d.Director:'',
-          writers:d.Writer!=='N/A'?d.Writer:'',actors:d.Actors!=='N/A'?d.Actors:'',awards:d.Awards!=='N/A'?d.Awards:'',
-          runtime:d.Runtime!=='N/A'?d.Runtime:'',lang:d.Language!=='N/A'?d.Language:'',country:d.Country!=='N/A'?d.Country:'',boxoffice:d.BoxOffice!=='N/A'?d.BoxOffice:''};
-        return oc[id];
-      }
-    }
-  }catch(e){}
+  if(CSMAP&&CSMAP[id]){oc[id]=csToInfo(CSMAP[id])||{};return oc[id];}
   return null;
 }
 
@@ -639,27 +635,25 @@ function renderSermovie(){
 async function loadSermoviePosters(items){
   for(const it of items){
     if(oc[it.title])continue; // already cached
-    try{
-      const r=await fetch('https://www.omdbapi.com/?t='+encodeURIComponent(it.title)+'&y='+it.year+'&apikey=b7570eeb');
-      if(r.ok){
-        const d=await r.json();
-        if(d.Poster&&d.Poster!=='N/A'){
-          oc[it.title]={poster:d.Poster,rating:d.imdbRating,votes:d.imdbVotes,imdbId:d.imdbID};
-          // Update card if visible
-          const cards=document.querySelectorAll('.card');
-          cards.forEach(c=>{
-            const titleEl=c.querySelector('.card-title');
-            if(titleEl&&titleEl.textContent.trim()===it.title){
-              const posterEl=c.querySelector('.card-poster');
-              if(posterEl&&!posterEl.querySelector('img')){
-                posterEl.innerHTML=`<img src="${d.Poster}" loading="lazy">`;
-              }
-            }
-          });
+    let x=null;
+    if(CSDB&&CSDB.items){
+      x=CSDB.items.find(q=>String(q.t||'').toLowerCase()===String(it.title||'').toLowerCase())||null;
+    }
+    if(x&&x.p){
+      oc[it.title]={poster:x.p,rating:x.r,votes:x.v,imdbId:x.i};
+      // Update card if visible
+      const cards=document.querySelectorAll('.card');
+      cards.forEach(c=>{
+        const titleEl=c.querySelector('.card-title');
+        if(titleEl&&titleEl.textContent.trim()===it.title){
+          const posterEl=c.querySelector('.card-poster');
+          if(posterEl&&!posterEl.querySelector('img')){
+            posterEl.innerHTML=`<img src="${x.p}" loading="lazy">`;
+          }
         }
-      }
-    }catch(e){}
-    await new Promise(r=>setTimeout(r,200));
+      });
+    }
+    await new Promise(r=>setTimeout(r,20));
   }
 }
 
