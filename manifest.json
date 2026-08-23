@@ -1,24 +1,56 @@
 {
   "name": "دنیای فیلم و سریال",
   "short_name": "سینما",
-  "description": "جستجو و دانلود فیلم و سریال با کیفیت‌های مختلف",
-  "start_url": ".",
+  "description": "جستجو، دانلود و معرفی فیلم و سریال — با پوستر، داستان، امتیاز و لینک‌های دانلود با کیفیت‌های مختلف",
+  "id": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
   "background_color": "#0d0d0d",
-  "theme_color": "#e50914",
-  "orientation": "portrait-primary",
+  "theme_color": "#0d0d0d",
+  "lang": "fa",
+  "dir": "rtl",
+  "categories": ["entertainment", "movies", "video"],
   "icons": [
     {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "فیلم‌ها",
+      "short_name": "فیلم",
+      "url": "./?t=movies",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "سریال‌ها",
+      "short_name": "سریال",
+      "url": "./?t=series",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "معرفی",
+      "short_name": "معرفی",
+      "url": "./?t=intro",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

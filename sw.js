@@ -1,9 +1,11 @@
-const CACHE_NAME = 'cinema-v2';
+const CACHE_NAME = 'cinema-v3';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './public/db.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
   './public/collections.json'
 ];
 
@@ -24,16 +26,15 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 // Fetch: network-first for data, cache-first for static
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // For data files (db.json, archive.json): network-first, fallback to cache
+  // For data files (db.json, collections.json): network-first, fallback to cache
   if (url.pathname.endsWith('.json')) {
     event.respondWith(
       fetch(event.request)
@@ -43,6 +44,23 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // For icons and images: cache-first with runtime caching
+  if (url.pathname.endsWith('.png') || url.pathname.endsWith('.svg') || url.pathname.endsWith('.jpg') || url.pathname.endsWith('.webp')) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        }).catch(() => caches.match('./icons/icon-192.png'));
+      })
     );
     return;
   }
