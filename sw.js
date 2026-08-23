@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cinema-v3';
+const CACHE_NAME = 'cinema-v5';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,22 @@ const STATIC_ASSETS = [
   './public/collections.json'
 ];
 
+
+// Notify all open clients that a new version has been installed
+function notifyClients(){
+  self.clients.matchAll().then(clients => {
+    clients.forEach(c => c.postMessage({ type: 'NEW_VERSION' }));
+  });
+}
+
+// Page asks us to take over -> activate the new service worker now
+self.addEventListener('message', event => {
+  const d = event.data || {};
+  if (d.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 // Install: cache static assets (don't fail if one asset is missing)
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -17,8 +33,7 @@ self.addEventListener('install', event => {
         fetch(url).then(r => { if (r.ok) return cache.put(url, r); }).catch(() => {})
       ))
     )
-  );
-  self.skipWaiting();
+  ).then(() => notifyClients());
 });
 
 // Activate: clean old caches
