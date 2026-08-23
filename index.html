@@ -672,6 +672,7 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
     loadCols().then(()=>renderIntro());
   }else{
     renderFilters();render();
+    loadPagePosters(); // fill any missing posters immediately
   }
 }));
 

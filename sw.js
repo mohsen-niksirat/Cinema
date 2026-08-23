@@ -1,4 +1,5 @@
-const CACHE_NAME = 'cinema-v11';
+const CACHE_NAME = 'cinema-v12';
+const IMG_CACHE = 'cinema-imgs';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -9,7 +10,6 @@ const STATIC_ASSETS = [
   './public/collections.json'
 ];
 
-
 // Notify all open clients that a new version has been installed
 function notifyClients(){
   self.clients.matchAll().then(clients => {
@@ -17,15 +17,16 @@ function notifyClients(){
   });
 }
 
-// Page asks us to take over -> activate the new service worker now
+// Page asks us to take over -> activate the new service worker now.
+// IMPORTANT: we only wipe the APP caches, NOT the image cache (cinema-imgs),
+// so posters stay cached and tab switches / updates stay fast.
 self.addEventListener('message', event => {
   const d = event.data || {};
   if (d.type === 'SKIP_WAITING') {
-    // Clear ALL caches inside the worker itself, then take over.
-    // Doing it here (not from the page) avoids racing with the install step.
     event.waitUntil(
-      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
-        .then(() => self.skipWaiting())
+      caches.keys().then(keys =>
+        Promise.all(keys.filter(k => k.startsWith('cinema-') && k !== IMG_CACHE).map(k => caches.delete(k)))
+      ).then(() => self.skipWaiting())
     );
   }
 });
@@ -41,16 +42,16 @@ self.addEventListener('install', event => {
   ).then(() => notifyClients());
 });
 
-// Activate: clean old caches
+// Activate: clean old app caches, keep the image cache
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k !== CACHE_NAME && k !== IMG_CACHE).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-// Fetch: network-first for data, cache-first for static
+// Fetch: network-first for data, cache-first for images & static
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
@@ -68,19 +69,21 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // For icons and images: cache-first with runtime caching
-  if (url.pathname.endsWith('.png') || url.pathname.endsWith('.svg') || url.pathname.endsWith('.jpg') || url.pathname.endsWith('.webp')) {
+  // For images (posters, icons): cache-first from the dedicated image cache,
+  // populate it on first load. Posters survive app updates this way.
+  if (url.pathname.endsWith('.png') || url.pathname.endsWith('.svg') || url.pathname.endsWith('.jpg') || url.pathname.endsWith('.jpeg') || url.pathname.endsWith('.webp') || url.pathname.endsWith('.avif')) {
     event.respondWith(
-      caches.match(event.request).then(cached => {
-        if (cached) return cached;
-        return fetch(event.request).then(response => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          }
-          return response;
-        }).catch(() => caches.match('./icons/icon-192.png'));
-      })
+      caches.open(IMG_CACHE).then(cache =>
+        cache.match(event.request).then(cached => {
+          if (cached) return cached;
+          return fetch(event.request).then(response => {
+            if (response && (response.ok || response.type === 'opaque')) {
+              cache.put(event.request, response.clone()).catch(() => {});
+            }
+            return response;
+          }).catch(() => caches.match('./icons/icon-192.png'));
+        })
+      )
     );
     return;
   }
