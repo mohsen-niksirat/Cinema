@@ -476,9 +476,9 @@ function cardHTML(item,idx){
   const seasonCount=item.seasons?item.seasons.length:0;
   const seasonInfo=seasonCount?seasonCount+' فصل':'';
   const isShow=item.type==='series'||item.type==='anime';
-  return'<div class="card" data-idx="'+idx+'" data-iid="'+esc(item.imdbId)+'">'+
+  return'<div class="card" data-idx="'+idx+'" data-iid="'+esc(item.imdbId)+'" data-type="'+(isShow?'series':'movie')+'">'+
     '<div class="card-top">'+
-      '<div class="card-poster">'+(poster?'<img src="'+poster+'" loading="lazy" alt="'+esc(item.title)+'">':'<div class="ni">'+(isShow?'📺':'🎬')+'</div>')+'</div>'+
+      '<div class="card-poster">'+csPosterHTML(cs.p||info.poster||'',cs.p_raw,'',isShow)+'</div>'+
       (item.rating?'<span class="rt-f">⭐ '+item.rating+'</span>':'')+
     '</div>'+
     '<div class="card-info">'+
@@ -653,17 +653,19 @@ async function loadSermoviePosters(items){
     if(oc[it.title]&&oc[it.title].poster)continue;
     let x=it.imdbId?CSMAP[it.imdbId]:(TSMAP[String(it.title||'').toLowerCase()]||null);
     if(x&&!it.imdbId&&x.i)it.imdbId=x.i;
-    if(x&&x.p){
+    if(x){
       if(!it.rating&&x.r)it.rating=x.r;
-      oc[it.title]={poster:x.p,rating:x.r,votes:x.v,imdbId:x.i};
+      oc[it.title]={poster:x.p||x.p_raw,rating:x.r,votes:x.v,imdbId:x.i};
       // Update card if visible
       const cards=document.querySelectorAll('.card');
       cards.forEach(c=>{
         const titleEl=c.querySelector('.card-title');
         if(titleEl&&titleEl.textContent.trim()===it.title){
           const posterEl=c.querySelector('.card-poster');
-          if(posterEl&&!posterEl.querySelector('img')&&x.p){
-            posterEl.innerHTML=`<img src="${x.p}" loading="lazy">`;
+          if(posterEl&&!posterEl.querySelector('img')&&(x.p||x.p_raw)){
+            const ph=document.createElement('div');
+            ph.innerHTML=csPosterHTML(x.p,x.p_raw,it.title,it.title);
+            posterEl.innerHTML=ph.firstChild?ph.firstChild.outerHTML:'';
           }
         }
       });
@@ -1014,6 +1016,12 @@ function loadPagePosters(){
 }
 
 let CSDB=null,CSMAP={},TSMAP={},COL=null,introView='grid',activeCol=null;
+function csPosterHTML(p,pRaw,title,isShow){
+  if(!p&&!pRaw)return'<div class="ni">'+(isShow?'📺':'🎬')+'</div>';
+  var src=esc(p||pRaw);
+  var alt=pRaw&&p!==pRaw?' data-raw="'+esc(pRaw)+'"':'';
+  return'<img src="'+src+'" loading="lazy" alt="'+esc(title||'')+'"'+alt+' onerror="if(this.dataset.raw){this.src=this.dataset.raw;this.removeAttribute(\'data-raw\')}else{this.outerHTML=\'<div class=&quot;ni&quot;>'+(isShow?'📺':'🎬')+'</div>\'}">';
+}
 function applyCSPosters(){
   if(!Object.keys(CSMAP).length) return;
   document.querySelectorAll('.card').forEach(function(c){
@@ -1021,8 +1029,9 @@ function applyCSPosters(){
     var cs=id?CSMAP[id]:null;
     if(!cs) return;
     var posterEl=c.querySelector('.card-poster');
-    if(posterEl&&!posterEl.querySelector('img')&&cs.p){
-      posterEl.innerHTML='<img src="'+cs.p+'" loading="lazy">';
+    if(posterEl&&!posterEl.querySelector('img')&&(cs.p||cs.p_raw)){
+      var ph=document.createElement('div');ph.innerHTML=csPosterHTML(cs.p,cs.p_raw,'',c.closest('.card').dataset.type!=='movie');
+      posterEl.innerHTML=ph.firstChild.outerHTML;
     }
     var pl=c.querySelector('.card-plot');
     if(pl&&cs.pl&&!pl.textContent)pl.textContent=cs.pl.length>110?cs.pl.slice(0,110)+'…':cs.pl;
@@ -1082,9 +1091,9 @@ function renderModal(item){
   const type=item.type==='anime'?'انیمه':(item.type==='series'||cs.tp==='s'?'سریال':'فیلم');
   const isShow=item.type==='series'||item.type==='anime';
   const runtime=(cs.rm?cs.rm+' min':'')||info.runtime||'';
-  let h=((cs.b||info.backdrop)?'<div class="m-backdrop"><img src="'+esc(cs.b||info.backdrop)+'" loading="lazy" alt=""></div>':'')+
+  let h=((cs.b||info.backdrop)?'<div class="m-backdrop"><img src="'+esc(cs.b||info.backdrop)+'" loading="lazy" alt="" onerror="this.parentElement.remove()"></div>':'')+
     '<div class="m-head'+((cs.b||info.backdrop)?' with-bd':'')+'">'+
-    '<div class="m-poster">'+(poster?'<img src="'+poster+'" loading="lazy" alt="'+esc(item.title)+'">':'<div class="ni">'+(isShow?'📺':'🎬')+'</div>')+'</div>'+
+    '<div class="m-poster">'+csPosterHTML(cs.p||info.poster||'',cs.p_raw,item.title,isShow)+'</div>'+
     '<div class="m-info">'+
       '<div class="m-t">'+esc(item.title)+'</div>'+
       '<div class="card-meta" style="margin-top:6px">'+
@@ -1175,7 +1184,7 @@ function rowHTML(it){
   const plot=cs.pl||info.plot||'';
   const links=(it.links||[]).length+(it.seasons||[]).reduce((a,s)=>a+(s.links||[]).length,0);
   const isShow=it.type==='series'||it.type==='anime';
-  return '<div class="c-poster">'+(poster?'<img src="'+poster+'" loading="lazy" alt="'+esc(it.title)+'">':'<div class="ni">'+(isShow?'📺':'🎬')+'</div>')+'</div>'+
+  return '<div class="c-poster">'+csPosterHTML(cs.p||info.poster||'',cs.p_raw,it.title,isShow)+'</div>'+
     '<div class="c-info">'+
       '<div class="c-t">'+esc(it.title)+'</div>'+
       '<div class="c-meta">'+
