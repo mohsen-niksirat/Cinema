@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cinema-v13';
+const CACHE_NAME = 'cinema-v14';
 const IMG_CACHE = 'cinema-imgs';
 const STATIC_ASSETS = [
   './',
