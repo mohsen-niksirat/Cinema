@@ -175,6 +175,13 @@ nav{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:
 .c-dl:hover{filter:brightness(1.15)}
 #grid > .col-grid,#grid > .c-rows,#grid > .cb-row{grid-column:1/-1}
 .cb-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;grid-column:1/-1}
+/* local per-section search */
+.lsearch{display:flex;align-items:center;gap:6px;margin-bottom:12px;max-width:420px}
+.lsearch input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text);font:inherit;font-size:.78rem;padding:8px 14px;outline:none;transition:.25s;min-width:0}
+.lsearch input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(229,9,20,.14)}
+.lsearch button{background:var(--bg2);border:1px solid var(--border);border-radius:50%;width:30px;height:30px;color:var(--text2);cursor:pointer;font-size:.8rem;flex-shrink:0;transition:.2s}
+.lsearch button:hover{color:var(--accent);border-color:var(--accent)}
+.sb .clr-show{display:inline-block}
 /* Install banner */
 .update-banner{position:fixed;top:14px;left:14px;right:14px;z-index:9998;max-width:560px;margin:0 auto;background:linear-gradient(135deg,#12241a 0%,#0d1a12 100%);border:1px solid rgba(70,211,105,.55);border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:12px;transform:translateY(-140%);opacity:0;transition:transform .45s cubic-bezier(.2,.9,.3,1.2),opacity .3s ease;box-shadow:var(--shadow)}
 .update-banner.show{transform:translateY(0);opacity:1}
@@ -228,7 +235,7 @@ nav{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:
 <nav>
   <div class="logo">🎬 دنیای فیلم</div>
   <div class="nr">
-    <div class="sb"><input type="text" id="si" placeholder="جستجوی نام، کد IMDb، ژانر..."><button id="sbtn">🔍</button></div>
+    <div class="sb"><input type="text" id="si" placeholder="جستجو در همه بخش‌ها..."><button id="sclr" title="پاک کردن" style="display:none">✕</button><button id="sbtn">🔍</button></div>
     <button class="ib" id="thB">🌙</button>
     <button class="ib" id="hdrInstall" title="نصب برنامه">⬇</button>
   </div>
@@ -253,6 +260,7 @@ nav{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:
   <div class="prog" id="prog" style="display:none"><div class="prog-bar"><div class="prog-fill" id="progFill"></div></div><div class="prog-text" id="progText">...</div></div>
   <div id="resSection" style="display:none">
     <div class="results-info"><div><span class="results-count" id="resCount">0</span> نتیجه</div><div class="filters" id="filterBar"></div></div>
+    <div class="lsearch" id="lsearchBox"><input type="text" id="lsi" placeholder="جستجو در این بخش..."><button id="lclr" title="پاک کردن">✕</button></div>
     <div class="grid" id="grid"></div>
     <div class="pg" id="pg"></div>
   </div>
@@ -555,6 +563,7 @@ function cardHTML(item,idx){
 }
 
 function render(){
+  if(globalQuery){renderGlobal();return;}
   if(tab==='sermovie'){renderSermovie();return;}
   if(tab==='intro'){renderIntro();return;}
   const items=DATA[tab];
@@ -584,7 +593,7 @@ function render(){
   const grid=document.getElementById('grid');
   if(!filtered.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ic">😔</div><p>یافت نشد</p></div>'}
   else{
-    grid.innerHTML=pi.map((it,idx)=>cardHTML(it,idx)).join('');
+    grid.innerHTML=pi.map((it,idx)=>cardHTML(it,(page*PP)+idx)).join('');
     grid.querySelectorAll('.cs-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openCineScore(b.dataset.csTitle,b.dataset.csId)}));
     grid.querySelectorAll('.card').forEach(c=>c.addEventListener('click',e=>{if(e.target.closest('a,details,summary,.cs-btn,.cp'))return;const it=filtered[parseInt(c.dataset.idx)];if(it)openDetail(it);}));
   }
@@ -634,13 +643,14 @@ async function loadSermovieData(){
     });
     // Sort by year descending
     items.sort((a,b)=>parseInt(b.year||0)-parseInt(a.year||0));
-    DATA.sermovie=items;
+    items.forEach(x=>x._ser=1);DATA.sermovie=items;
     sermovieLoaded=true;
     if(tab==='sermovie'){renderSermovie();}
   }catch(e){console.log('db.json load error:',e);}
 }
 
 function renderSermovie(){
+  if(globalQuery){renderGlobal();return;}
   const items=DATA.sermovie||[];
   let filtered=items;
   // Sub-tab filter
@@ -684,7 +694,7 @@ function renderSermovie(){
   const pi=filtered.slice(page*PP,(page+1)*PP);
   const grid=document.getElementById('grid');
   if(!filtered.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ic">😔</div><p>یافت نشد</p></div>';return;}
-  grid.innerHTML=pi.map((it,idx)=>cardHTML(it,idx)).join('');
+  grid.innerHTML=pi.map((it,idx)=>cardHTML(it,(page*PP)+idx)).join('');
     // Open detail modal on card click
   grid.querySelectorAll('.cs-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openCineScore(b.dataset.csTitle,b.dataset.csId)}));
   grid.querySelectorAll('.card').forEach(c=>c.addEventListener('click',e=>{
@@ -734,8 +744,11 @@ async function loadSermoviePosters(items){
 // Tabs
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');
-  tab=t.dataset.t;page=0;filter="all";query="";sortBy='rating';sermovieTab='all';introView='grid';activeCol=null;document.getElementById("si").value="";
+  tab=t.dataset.t;page=0;filter="all";query="";sortBy='rating';sermovieTab='all';introView='grid';activeCol=null;globalQuery='';
+  document.getElementById("si").value="";document.getElementById('sclr').style.display='none';
+  document.getElementById("lsi").value="";
   document.getElementById('filterBar').innerHTML='';
+  document.getElementById('lsearchBox').style.display=(tab==='intro')?'none':'flex';
   if(tab==='sermovie'){
     document.getElementById('filterBar').innerHTML='<div class="sp"></div> در حال بارگذاری...';
     document.getElementById('grid').innerHTML='';
@@ -750,10 +763,72 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   }
 }));
 
-// Search - real-time
-let sTimer=null;
-document.getElementById("si").addEventListener("input",()=>{clearTimeout(sTimer);sTimer=setTimeout(()=>{query=document.getElementById("si").value.trim();page=0;render()},150)});
-document.getElementById("sbtn").addEventListener("click",()=>{query=document.getElementById("si").value.trim();page=0;render()});
+// ===== Search =====
+// Header box = GLOBAL search across all sections; per-section box = local.
+let globalQuery='';
+function renderGlobal(){
+  const q=globalQuery.toLowerCase();
+  const ql=q.replace(/[^\w\u0600-\u06FF]+/g,' ').trim();
+  const nm=x=>String(x||'').toLowerCase();
+  const qln=nm(ql);
+  const match=(t,y)=>nm(t).includes(q)||(ql&&nm(t).replace(/[^a-z0-9\u0600-\u06FF]+/g,' ').includes(qln))||String(y||'').includes(q);
+  const merged=[];
+  const seen=new Set();
+  const push=(arr,tp)=>{
+    arr.forEach(it=>{
+      if(!match(it.title,it.year))return;
+      const key=it.imdbId||(nm(it.title)+'|'+(it.year||''));
+      if(seen.has(key))return;
+      seen.add(key);
+      merged.push(it);
+    });
+  };
+  push(DATA.movies||[]);
+  push(DATA.series||[]);
+  push(DATA.sermovie||[]);
+  document.getElementById('resCount').textContent=merged.length;
+  document.getElementById('pg').innerHTML='';
+  const grid=document.getElementById('grid');
+  if(!merged.length){grid.innerHTML='<div class="empty"><div class="ic">😔</div><p>چیزی پیدا نشد</p></div>';return;}
+  const shown=merged.slice(0,90);
+  grid.innerHTML=shown.map((it,idx)=>cardHTML(it,idx)).join('');
+  grid.querySelectorAll('.cs-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openCineScore(b.dataset.csTitle,b.dataset.csId)}));
+  grid.querySelectorAll('.card').forEach(c=>c.addEventListener('click',e=>{
+    if(e.target.closest('a,details,summary,.cs-btn,.cp'))return;
+    const it=shown[parseInt(c.dataset.idx)];
+    if(it)openDetail(it);
+  }));
+  applyCSPosters();
+  // enrich sermovie-typed cards (title->imdbId->poster)
+  const serItems=shown.filter(it=>it._ser);
+  if(serItems.length)loadSermoviePosters(serItems);
+}
+let sTimer=null,lTimer=null;
+document.getElementById("si").addEventListener("input",e=>{
+  const v=e.target.value;
+  document.getElementById('sclr').style.display=v?'inline-block':'none';
+  clearTimeout(sTimer);
+  sTimer=setTimeout(()=>{globalQuery=v.trim();page=0;render()},200);
+});
+document.getElementById("sbtn").addEventListener("click",()=>{
+  globalQuery=document.getElementById("si").value.trim();page=0;render();
+});
+document.getElementById("sclr").addEventListener("click",()=>{
+  document.getElementById("si").value="";
+  document.getElementById('sclr').style.display='none';
+  globalQuery='';page=0;render();
+});
+document.getElementById("lsi").addEventListener("input",e=>{
+  const v=e.target.value;
+  document.getElementById('lclr').style.display=v?'inline-block':'none';
+  clearTimeout(lTimer);
+  lTimer=setTimeout(()=>{query=v.trim();page=0;render()},200);
+});
+document.getElementById("lclr").addEventListener("click",()=>{
+  document.getElementById("lsi").value="";
+  document.getElementById('lclr').style.display='none';
+  query='';page=0;render();
+});
 
 // Theme
 const savedTheme=(()=>{try{return localStorage.getItem('cinemaTheme')}catch(e){return null}})();
@@ -1024,7 +1099,7 @@ function showResults(){
   document.getElementById('loadBox').style.display='none';
   loadPagePosters();
   loadCSDB(); // preload CineScore db so posters/plots appear on cards immediately
-  document.getElementById('resSection').style.display='block';
+  document.getElementById('resSection').style.display='block';document.getElementById('lsearchBox').style.display=(tab==='intro')?'none':'flex';
   renderFilters();render();
   toast(`${DATA.movies.length} فیلم و ${DATA.series.length} سریال بارگذاری شد`,'s');
 }
