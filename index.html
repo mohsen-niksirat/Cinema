@@ -143,11 +143,16 @@ nav{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:
 .m-src a .dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
 /* ---- معرفی (collections) ---- */
 .col-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;grid-column:1/-1}
-.col-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:.25s;display:flex;flex-direction:column}
-.col-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow)}
-.col-emoji{font-size:1.9rem}
-.col-t{font-size:.95rem;font-weight:800;margin:8px 0 4px}
-.col-d{font-size:.7rem;color:var(--text2);line-height:1.65;flex:1}
+.col-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:.25s;display:flex;flex-direction:column}
+.col-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow),var(--glow)}
+.col-cover{position:relative;aspect-ratio:16/9;background:var(--bg2);overflow:hidden}
+.col-cover img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.col-card:hover .col-cover img{transform:scale(1.05)}
+.col-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,12,.55) 0%,transparent 45%)}
+.col-emoji{position:absolute;bottom:8px;right:10px;z-index:1;font-size:1.5rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+.col-body{padding:12px 13px 13px;display:flex;flex-direction:column;flex:1}
+.col-t{font-size:.92rem;font-weight:800;margin-bottom:4px}
+.col-d{font-size:.68rem;color:var(--text2);line-height:1.65;flex:1}
 .col-n{display:inline-block;margin-top:10px;padding:2px 11px;border-radius:12px;background:rgba(229,9,20,.13);color:var(--accent);font-size:.65rem;font-weight:800;align-self:flex-start}
 .c-rows{display:flex;flex-direction:column;gap:8px;grid-column:1/-1}
 .c-row{display:flex;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px;align-items:center;cursor:pointer;transition:.2s}
@@ -1164,11 +1169,14 @@ function renderIntro(){
   });
 }
 function colCardHTML(c,i){
+  const cover=c.cover?'<img src="'+esc(c.cover)+'" loading="lazy" alt="'+esc(c.title)+'" onerror="this.remove()">':'';
   return '<div class="col-card" data-i="'+i+'">'+
-    '<div class="col-emoji">'+c.emoji+'</div>'+
-    '<div class="col-t">'+esc(c.title)+'</div>'+
-    '<div class="col-d">'+esc(c.desc)+'</div>'+
-    '<span class="col-n">'+c.items.length+' عنوان</span>'+
+    '<div class="col-cover">'+cover+'<span class="col-emoji">'+c.emoji+'</span></div>'+
+    '<div class="col-body">'+
+      '<div class="col-t">'+esc(c.title)+'</div>'+
+      '<div class="col-d">'+esc(c.desc)+'</div>'+
+      '<span class="col-n">'+c.items.length+' عنوان</span>'+
+    '</div>'+
   '</div>';
 }
 function renderColDetail(c){
