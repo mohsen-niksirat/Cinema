@@ -12,6 +12,8 @@ const SERVERS = [
   'https://dl3.sermoviedown.pw',
   'https://dl4.sermoviedown.pw',
   'https://dl5.sermoviedown.pw',
+  'https://dl11.sermoviedown.pw',
+  'https://dl12.sermoviedown.pw',
 ];
 
 function fetch(url) {
