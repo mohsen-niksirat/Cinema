@@ -92,6 +92,8 @@ nav{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:
 .dl-link .sz{margin-right:auto;font-size:.54rem;color:var(--text3)}
 .cp{flex-shrink:0;width:24px;height:22px;border:1px solid var(--border);background:none;color:var(--text2);border-radius:5px;cursor:pointer;font-size:.6rem;line-height:1}
 .cp:hover{color:var(--accent);border-color:var(--accent)}
+.play-btn{width:auto;padding:0 8px;background:var(--grad);color:#fff!important;border:none!important;font-weight:800;text-decoration:none!important}
+.play-btn:hover{filter:brightness(1.15)}
 .imdb-a{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;background:var(--gold);color:#000;border-radius:4px;text-decoration:none;font-size:.58rem;font-weight:700;margin-top:4px}
 .pg{display:flex;justify-content:center;gap:5px;padding:16px 0;flex-wrap:wrap}
 .pb{padding:5px 12px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font:inherit;font-size:.68rem;border-radius:7px;cursor:pointer;transition:.2s}
@@ -359,6 +361,7 @@ async function crawlForNew(){}
 
 let DATA={movies:[],series:[],sermovie:[]};
 let tab='movies',query='',filter='all',sortBy='rating',page=0,PP=30,oc={};
+var CUR_TITLE='';
 
 function subLabel(s){
   s=String(s||'');
@@ -367,8 +370,16 @@ function subLabel(s){
   if(/nosub/i.test(s))return'⚪ بدون زیرنویس';
   return'🔵 زیرنویس';
 }
+/* پلیر آنلاین CinePlay — باز شدن در تب جدید */
+var CINEPLAY_URL='https://mohsen-niksirat.github.io/CinePlay/';
+function cinePlayLink(u,title){
+  var p='?src='+encodeURIComponent(u);
+  if(title)p+='&title='+encodeURIComponent(title);
+  return CINEPLAY_URL+p;
+}
 function dlAnchor(u,q,size){
   return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" target="_blank" rel="noopener">▶ '+esc(q)+(size?' <span class="sz">'+esc(size)+'</span>':'')+'</a>'+
+    '<a class="cp play-btn" href="'+esc(cinePlayLink(u,CUR_TITLE))+'" target="_blank" rel="noopener" title="پخش آنلاین با سینما پلی">🎬 پخش</a>'+
     '<button class="cp" data-u="'+esc(u)+'" title="کپی لینک">⧉</button></div>';
 }
 function isFolderUrl(u){
@@ -377,7 +388,7 @@ function isFolderUrl(u){
 function dlRow(l){
   var u=l.href||l.u, q=l.qual||l.q, s=l.size||l.s;
   if(isFolderUrl(u)){
-    return '<div class="dl-row"><a class="dl-link fld" href="'+esc(u)+'" target="_blank" rel="noopener" onclick="return toggleFolderRow(this,\''+encodeURIComponent(u)+'\')" title="کلیک: لیست اپیزودها — راست‌کلیک/باز کردن در تب: دایرکتوری هاست">📁 '+esc(q)+' <span class="sz">کیفیت — برای لیست اپیزودها کلیک کنید</span></a>'+
+    return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" target="_blank" rel="noopener">📁 '+esc(q)+' <span class="sz">پوشه در هاست</span></a>'+
       '<button class="cp" data-u="'+esc(u)+'" title="کپی لینک پوشه">⧉</button>'+
       '<button class="cp" data-f="'+esc(u)+'" onclick="openFolderFiles(this,this.getAttribute(\'data-f\'))" title="نمایش فایل‌های این پوشه">📂</button></div>'+
       '<div class="fx-files" style="display:none"></div>';
@@ -433,48 +444,10 @@ async function fetchFolderListing(url){
   return {empty:true,type:lastErrType};
 }
 window.FOLDER_CACHE={};
-/* کلیک روی ردیف کیفیت (پوشه) → toggle لیست اپیزودها، بدون رفتن به دایرکتوری */
-window.toggleFolderRow=function(a,enc){
-  var u=decodeURIComponent(enc);
-  var row=a.closest('.dl-row'),holder=row.nextElementSibling;
-  if(!holder||!holder.classList.contains('fx-files'))return true;
-  /* باز/بسته اگر قبلاً لود شده */
-  if(holder.dataset.loaded==='1'){
-    var show=holder.style.display==='none'||!holder.dataset.open;
-    holder.style.display=show?'block':'none';
-    holder.dataset.open=show?'1':'0';
-    return false;
-  }
-  if(holder.dataset.loading==='1')return false;
-  holder.dataset.loading='1';
-  var sz=a.querySelector('.sz');if(sz)sz.textContent='در حال دریافت لیست…';
-  openFolderFiles(row.querySelector('.cp[data-f]'),u,true).then(function(){
-    holder.dataset.loading='0';
-    if(sz)sz.textContent='کیفیت — برای لیست اپیزودها کلیک کنید';
-  });
-  return false;
-};
-/* باز/بسته شدن فصل — همه پوشه‌های کیفیت را خودکار به اپیزود تبدیل کن */
-window.seasonToggled=function(det){
-  if(!det.open||det.dataset.auto==='1')return;
-  det.dataset.auto='1';
-  var btns=det.querySelectorAll('.cp[data-f]');
-  if(btns.length){
-    btns.forEach(function(b){
-      openFolderFiles(b,b.getAttribute('data-f'),true);
-    });
-  }
-};
-window.openFolderFiles=async function(btn,url,force){
+window.openFolderFiles=async function(btn,url){
   var row=btn.closest('.dl-row'),holder=row.nextElementSibling;
   if(!holder||!holder.classList.contains('fx-files'))return false;
-  /* بدون force: toggle (دکمه 📂) — با force: فقط باز کن (کلیک کیفیت/باز شدن فصل) */
-  if(!force&&holder.dataset.loaded==='1'){
-    var show=holder.style.display!=='block';
-    holder.style.display=show?'block':'none';
-    holder.dataset.open=show?'1':'0';
-    return true;
-  }
+  if(holder.dataset.open==='1'&&holder.dataset.loaded==='1'){holder.style.display='none';holder.dataset.open='0';return true;}
   if(holder.dataset.loaded!=='1'){
     btn.textContent='⏳';
     var res=window.FOLDER_CACHE[url];
@@ -527,6 +500,7 @@ window.copySectionLinks=async function(btn){
 };
 function buildDLSection(item){
   var h='';
+  CUR_TITLE=item.title||'';
   if(item.seasons&&item.seasons.length){
     var groups={};
     item.seasons.forEach(function(s){var k=s.sub||'SoftSub';if(!groups[k])groups[k]=[];groups[k].push(s);});
@@ -534,7 +508,7 @@ function buildDLSection(item){
       var seasons=groups[grp];
       h+='<div class="sub-h">'+subLabel(grp)+'</div>';
       seasons.forEach(function(s){
-        h+='<details style="margin-bottom:4px" ontoggle="seasonToggled(this)"><summary class="season-h">📀 فصل '+esc(s.num)+' ('+s.links.length+' کیفیت)</summary>';
+        h+='<details style="margin-bottom:4px"><summary class="season-h">📀 فصل '+esc(s.num)+' ('+s.links.length+' کیفیت)</summary>';
         s.links.forEach(function(l){
           h+=dlRow(l);
         });
