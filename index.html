@@ -450,9 +450,46 @@ document.getElementById('dlOv').addEventListener('click',function(e){if(e.target
 /* هرEsc ببند */
 document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('dlOv').hidden=true;});
 
+/* نسخه‌های قابل‌سوییچ برای پلیر — همه لینک‌های مستقیم همین عنوان */
+var CUR_VERSIONS=[];
+function buildVersionsForPlayer(item){
+  var vs={};
+  function add(u,q,k){
+    if(!u||isFolderUrl(u))return;
+    var label=q||'';
+    if(k==='Dubbed')label='🔴 دوبله — '+label;
+    else if(k==='HardSub')label='🟠 زیرنویس چسبیده — '+label;
+    else if(k==='NoSub')label='⚪ بدون زیرنویس — '+label;
+    else label='🔵 زیرنویس‌دار — '+label;
+    vs[u]={name:label,src:u};
+  }
+  if(item.seasons&&item.seasons.length){
+    item.seasons.forEach(function(s){
+      var k=s.sub||'SoftSub';
+      s.links.forEach(function(l){add(l.u||l.href,l.q||l.qual,k)});
+    });
+  } else {
+    (item.links||[]).forEach(function(l){
+      var url=(l.href||l.u||'').toLowerCase();
+      var k='SoftSub';
+      if(url.indexOf('/dubbed/')!==-1||url.indexOf('.dubbed.')!==-1||url.indexOf('.farsi.dubbed.')!==-1) k='Dubbed';
+      else if(url.indexOf('/hardsub/')!==-1||url.indexOf('.hardsub.')!==-1) k='HardSub';
+      else if(url.indexOf('/nosub/')!==-1) k='NoSub';
+      add(l.href||l.u,l.qual||l.q,k);
+    });
+  }
+  CUR_VERSIONS=Object.keys(vs).map(function(u){return vs[u]});
+}
+function playLinkFor(u,title){
+  var p='?src='+encodeURIComponent(u);
+  if(title)p+='&title='+encodeURIComponent(title);
+  /* نسخه‌های سوییچ‌پذیر (دوبله/زیرنویس) همان عنوان */
+  if(CUR_VERSIONS.length>1)p+='&vers='+encodeURIComponent(JSON.stringify(CUR_VERSIONS));
+  return CINEPLAY_URL+p;
+}
 /* آیکون پخش آنلاین — SVG قشنگ */
 function playBtnHTML(u,title){
-  return '<a class="cp play-btn" href="'+esc(cinePlayLink(u,title))+'" target="_blank" rel="noopener" title="پخش آنلاین با سینما پلی">'+
+  return '<a class="cp play-btn" href="'+esc(playLinkFor(u,title))+'" target="_blank" rel="noopener" title="پخش آنلاین با سینما پلی">'+
     '<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.04 1.04 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14z"/></svg> پخش</a>';
 }
 /* پخش پوشه فصل — اول اپیزودها را می‌گیرد بعد همه را به CinePlay پاس می‌دهد */
@@ -482,8 +519,7 @@ function dlAnchor(u,q,size){
   return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" onclick="showDlDialog(this.getAttribute(\'data-raw\'),\''+encodeURIComponent(CUR_TITLE||'')+'\');return false" data-raw="'+esc(u)+'" title="دانلود — انتخاب دانلودمنیجر">⬇ '+esc(q)+(size?' <span class="sz">'+esc(size)+'</span>':'')+'</a>'+
     playBtnHTML(u,CUR_TITLE)+
     '<button class="cp" data-u="'+esc(u)+'" title="کپی لینک">⧉</button></div>';
-}
-function isFolderUrl(u){
+}function isFolderUrl(u){
   return !/\.(mkv|mp4|avi|mov|wmv|webm|m4v|rar|zip|srt)$/i.test(String(u||'').split(/[?#]/)[0]);
 }
 function dlRow(l){
@@ -603,6 +639,7 @@ window.copySectionLinks=async function(btn){
 function buildDLSection(item){
   var h='';
   CUR_TITLE=item.title||'';
+  buildVersionsForPlayer(item);
   if(item.seasons&&item.seasons.length){
     var groups={};
     item.seasons.forEach(function(s){var k=s.sub||'SoftSub';if(!groups[k])groups[k]=[];groups[k].push(s);});
