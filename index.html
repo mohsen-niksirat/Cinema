@@ -84,6 +84,8 @@ nav{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:
 .copyall:disabled{opacity:.6}
 .fx-files{padding:2px 10px 4px 0;margin:2px 10px 4px 0;border-right:2px solid var(--border)}
 .fx-files .dl-row .cp[data-f]{display:none}
+.fx-err{font-size:.66rem;color:var(--gold);padding:6px 8px;line-height:1.8;background:rgba(245,197,24,.07);border-radius:8px;margin:4px 0}
+.dl-link.fld .sz{color:var(--blue);font-size:.6rem}
 .dl-row{display:flex;align-items:center;gap:4px}
 .dl-link{display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:5px;font-size:.6rem;color:var(--text2);text-decoration:none;transition:.15s;margin-bottom:1px;flex:1;min-width:0}
 .dl-link:hover{background:rgba(229,9,20,.1);color:var(--accent)}
@@ -375,7 +377,7 @@ function isFolderUrl(u){
 function dlRow(l){
   var u=l.href||l.u, q=l.qual||l.q, s=l.size||l.s;
   if(isFolderUrl(u)){
-    return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" target="_blank" rel="noopener">📁 '+esc(q)+' <span class="sz">پوشه در هاست</span></a>'+
+    return '<div class="dl-row"><a class="dl-link fld" href="'+esc(u)+'" target="_blank" rel="noopener" onclick="return toggleFolderRow(this,\''+encodeURIComponent(u)+'\')" title="کلیک: لیست اپیزودها — راست‌کلیک/باز کردن در تب: دایرکتوری هاست">📁 '+esc(q)+' <span class="sz">کیفیت — برای لیست اپیزودها کلیک کنید</span></a>'+
       '<button class="cp" data-u="'+esc(u)+'" title="کپی لینک پوشه">⧉</button>'+
       '<button class="cp" data-f="'+esc(u)+'" onclick="openFolderFiles(this,this.getAttribute(\'data-f\'))" title="نمایش فایل‌های این پوشه">📂</button></div>'+
       '<div class="fx-files" style="display:none"></div>';
@@ -414,7 +416,8 @@ async function fetchFolderListing(url){
   var attempts=[target,
     'https://api.allorigins.win/raw?url='+encodeURIComponent(target),
     'https://test.cors.workers.dev/?'+target,
-    'https://api.codetabs.com/v1/proxy?quest='+target];
+    'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(target)];
+  var lastErrType='net';
   for(var i=0;i<attempts.length;i++){
     try{
       var c=new AbortController(),tm=setTimeout(function(){c.abort()},12000);
@@ -422,13 +425,35 @@ async function fetchFolderListing(url){
       clearTimeout(tm);
       if(!r.ok)continue;
       var html=await r.text();
+      if(/آی پی داخلی|Service Unavailable/i.test(html)&&i===attempts.length-1){lastErrType='ir';break;}
       var files=parseFolderListing(html,target);
       if(files.length)return files;
     }catch(e){}
   }
-  return [];
+  return {empty:true,type:lastErrType};
 }
 window.FOLDER_CACHE={};
+/* کلیک روی ردیف کیفیت (پوشه) → toggle لیست اپیزودها، بدون رفتن به دایرکتوری */
+window.toggleFolderRow=function(a,enc){
+  var u=decodeURIComponent(enc);
+  var row=a.closest('.dl-row'),holder=row.nextElementSibling;
+  if(!holder||!holder.classList.contains('fx-files'))return true;
+  /* باز/بسته اگر قبلاً لود شده */
+  if(holder.dataset.loaded==='1'){
+    var show=holder.style.display==='none'||!holder.dataset.open;
+    holder.style.display=show?'block':'none';
+    holder.dataset.open=show?'1':'0';
+    return false;
+  }
+  if(holder.dataset.loading==='1')return false;
+  holder.dataset.loading='1';
+  var sz=a.querySelector('.sz');if(sz)sz.textContent='در حال دریافت لیست…';
+  openFolderFiles(row.querySelector('.cp[data-f]'),u,true).then(function(){
+    holder.dataset.loading='0';
+    if(sz)sz.textContent='کیفیت — برای لیست اپیزودها کلیک کنید';
+  });
+  return false;
+};
 /* باز/بسته شدن فصل — همه پوشه‌های کیفیت را خودکار به اپیزود تبدیل کن */
 window.seasonToggled=function(det){
   if(!det.open||det.dataset.auto==='1')return;
@@ -436,27 +461,37 @@ window.seasonToggled=function(det){
   var btns=det.querySelectorAll('.cp[data-f]');
   if(btns.length){
     btns.forEach(function(b){
-      var holder=b.closest('.dl-row').nextElementSibling;
-      if(!holder||!holder.classList.contains('fx-files'))return;
-      if(holder.dataset.loaded==='1'){holder.style.display='block';holder.dataset.open='1';return;}
-      openFolderFiles(b,b.getAttribute('data-f'));
+      openFolderFiles(b,b.getAttribute('data-f'),true);
     });
   }
 };
-window.openFolderFiles=async function(btn,url){
-  var holder=btn.closest('.dl-row').nextElementSibling;
-  if(!holder||!holder.classList.contains('fx-files'))return;
-  if(holder.dataset.open==='1'){holder.style.display='none';holder.dataset.open='0';return;}
+window.openFolderFiles=async function(btn,url,force){
+  var row=btn.closest('.dl-row'),holder=row.nextElementSibling;
+  if(!holder||!holder.classList.contains('fx-files'))return false;
+  /* بدون force: toggle (دکمه 📂) — با force: فقط باز کن (کلیک کیفیت/باز شدن فصل) */
+  if(!force&&holder.dataset.loaded==='1'){
+    var show=holder.style.display!=='block';
+    holder.style.display=show?'block':'none';
+    holder.dataset.open=show?'1':'0';
+    return true;
+  }
   if(holder.dataset.loaded!=='1'){
     btn.textContent='⏳';
-    var files=window.FOLDER_CACHE[url];
-    if(!files){files=await fetchFolderListing(url);if(files.length)window.FOLDER_CACHE[url]=files;}
+    var res=window.FOLDER_CACHE[url];
+    if(!res){res=await fetchFolderListing(url);window.FOLDER_CACHE[url]=res;}
     btn.textContent='📂';
-    holder.innerHTML=files.length?files.map(function(f){return dlAnchor(f.u,f.q,f.s)}).join(''):'<div style="font-size:.6rem;color:var(--text3);padding:2px 6px">فایلی پیدا نشد یا دسترسی ممکن نیست. از دکمه پوشه در هاست استفاده کنید.</div>';
-    bindCp(holder);
+    if(res&&res.empty){
+      holder.innerHTML=res.type==='ir'
+        ?'<div class="fx-err">🇮🇷 این سرور فقط با آی‌پی ایران پاسخ می‌دهد و از این اتصال قابل خواندن نیست. از دکمه ⧉ لینک پوشه را کپی کنید یا در تب جدید باز کنید.</div>'
+        :'<div class="fx-err">⚠️ فایل‌های این پوشه در دسترس نیست (سرور پاسخ نداد). از دکمه ⧉ لینک پوشه را کپی کنید یا در تب جدید باز کنید.</div>';
+    }else{
+      holder.innerHTML=res.length?res.map(function(f){return dlAnchor(f.u,f.q,f.s)}).join(''):'<div class="fx-err">⚠️ فایلی پیدا نشد — از دکمه پوشه در هاست استفاده کنید.</div>';
+      bindCp(holder);
+    }
     holder.dataset.loaded='1';
   }
   holder.style.display='block';holder.dataset.open='1';
+  return true;
 };
 window.copySectionLinks=async function(btn){
   var wrap=btn.parentElement;
@@ -475,8 +510,8 @@ window.copySectionLinks=async function(btn){
     for(var f of fl){
       btn.textContent='⏳ '+i+'/'+fl.length+' پوشه...';
       var files=window.FOLDER_CACHE[f];
-      if(!files){files=await fetchFolderListing(f);if(files.length)window.FOLDER_CACHE[f]=files;}
-      files.forEach(function(x){all.push(x.u)});
+      if(!files){files=await fetchFolderListing(f);window.FOLDER_CACHE[f]=files;}
+      if(files&&!files.empty)files.forEach(function(x){all.push(x.u)});
       i++;
     }
     btn.disabled=false;
