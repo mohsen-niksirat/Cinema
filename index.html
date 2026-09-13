@@ -98,8 +98,9 @@ nav{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:
 .dl-link .sz{margin-right:auto;font-size:.54rem;color:var(--text3)}
 .cp{flex-shrink:0;width:24px;height:22px;border:1px solid var(--border);background:none;color:var(--text2);border-radius:5px;cursor:pointer;font-size:.6rem;line-height:1}
 .cp:hover{color:var(--accent);border-color:var(--accent)}
-.play-btn{width:auto;padding:0 8px;background:var(--grad);color:#fff!important;border:none!important;font-weight:800;text-decoration:none!important}
-.play-btn:hover{filter:brightness(1.15)}
+.play-btn{width:auto;padding:0 9px;background:var(--grad);color:#fff!important;border:none!important;font-weight:800;text-decoration:none!important;display:inline-flex;align-items:center;gap:4px;font-size:.58rem}
+.play-btn:hover{filter:brightness(1.18);box-shadow:0 0 10px rgba(229,9,20,.45)}
+.play-btn svg{flex-shrink:0}
 .imdb-a{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;background:var(--gold);color:#000;border-radius:4px;text-decoration:none;font-size:.58rem;font-weight:700;margin-top:4px}
 .pg{display:flex;justify-content:center;gap:5px;padding:16px 0;flex-wrap:wrap}
 .pb{padding:5px 12px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font:inherit;font-size:.68rem;border-radius:7px;cursor:pointer;transition:.2s}
@@ -449,9 +450,37 @@ document.getElementById('dlOv').addEventListener('click',function(e){if(e.target
 /* هرEsc ببند */
 document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('dlOv').hidden=true;});
 
+/* آیکون پخش آنلاین — SVG قشنگ */
+function playBtnHTML(u,title){
+  return '<a class="cp play-btn" href="'+esc(cinePlayLink(u,title))+'" target="_blank" rel="noopener" title="پخش آنلاین با سینما پلی">'+
+    '<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.04 1.04 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14z"/></svg> پخش</a>';
+}
+/* پخش پوشه فصل — اول اپیزودها را می‌گیرد بعد همه را به CinePlay پاس می‌دهد */
+function playSeasonHTML(folderUrl,title){
+  return '<a class="cp play-btn" href="#" onclick="return playSeason(this,\''+encodeURIComponent(folderUrl)+'\',\''+encodeURIComponent(title||'')+'\')" title="پخش آنلاین فصل — ابتدا اپیزودها دریافت می‌شود">'+
+    '<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.04 1.04 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14z"/></svg> پخش فصل</a>';
+}
+window.playSeason=async function(a,encFolder,encTitle){
+  var folder=decodeURIComponent(encFolder),title=decodeURIComponent(encTitle);
+  var orig=a.innerHTML;
+  a.innerHTML='⏳…';
+  try{
+    var files=window.FOLDER_CACHE[folder];
+    if(!files||!files.length){files=await fetchFolderListing(folder);window.FOLDER_CACHE[folder]=files;}
+    a.innerHTML=orig;
+    if(!files||!files.length||files.empty){toast('اپیزودها در دسترس نیست — سرور از این اتصال پاسخ نمی‌دهد','e');return false;}
+    var eps=files.map(function(f){return {src:f.u,name:f.q||f.u.split('/').pop()}});
+    var p=new URLSearchParams();
+    p.set('src',eps[0].src);
+    if(title)p.set('title',title);
+    p.set('eps',encodeURIComponent(JSON.stringify(eps)));
+    window.open(CINEPLAY_URL+'?'+p.toString(),'_blank','noopener');
+  }catch(e){a.innerHTML=orig;toast('خطا در دریافت اپیزودها','e');}
+  return false;
+};
 function dlAnchor(u,q,size){
-  return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" onclick="showDlDialog(\''+encodeURIComponent(u)+'\',\''+encodeURIComponent(CUR_TITLE||'')+'\');return false" title="دانلود — انتخاب دانلودمنیجر">⬇ '+esc(q)+(size?' <span class="sz">'+esc(size)+'</span>':'')+'</a>'+
-    '<a class="cp play-btn" href="'+esc(cinePlayLink(u,CUR_TITLE))+'" target="_blank" rel="noopener" title="پخش آنلاین با سینما پلی">🎬 پخش</a>'+
+  return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" onclick="showDlDialog(this.getAttribute(\'data-raw\'),\''+encodeURIComponent(CUR_TITLE||'')+'\');return false" data-raw="'+esc(u)+'" title="دانلود — انتخاب دانلودمنیجر">⬇ '+esc(q)+(size?' <span class="sz">'+esc(size)+'</span>':'')+'</a>'+
+    playBtnHTML(u,CUR_TITLE)+
     '<button class="cp" data-u="'+esc(u)+'" title="کپی لینک">⧉</button></div>';
 }
 function isFolderUrl(u){
@@ -461,6 +490,7 @@ function dlRow(l){
   var u=l.href||l.u, q=l.qual||l.q, s=l.size||l.s;
   if(isFolderUrl(u)){
     return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" target="_blank" rel="noopener">📁 '+esc(q)+' <span class="sz">پوشه در هاست</span></a>'+
+      playSeasonHTML(u,CUR_TITLE)+
       '<button class="cp" data-u="'+esc(u)+'" title="کپی لینک پوشه">⧉</button>'+
       '<button class="cp" data-f="'+esc(u)+'" onclick="openFolderFiles(this,this.getAttribute(\'data-f\'))" title="نمایش فایل‌های این پوشه">📂</button></div>'+
       '<div class="fx-files" style="display:none"></div>';
