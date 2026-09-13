@@ -84,6 +84,12 @@ nav{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:
 .copyall:disabled{opacity:.6}
 .fx-files{padding:2px 10px 4px 0;margin:2px 10px 4px 0;border-right:2px solid var(--border)}
 .fx-files .dl-row .cp[data-f]{display:none}
+/* دیالوگ انتخاب دانلودمنیجر */
+.dl-opt{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--border);background:var(--bg2);border-radius:11px;cursor:pointer;color:var(--text);font:inherit;font-size:.78rem;font-weight:700;margin-bottom:7px;transition:.15s;text-align:right;text-decoration:none}
+.dl-opt:hover{border-color:var(--accent);transform:translateX(-2px)}
+.dl-opt .ic{font-size:1.15rem;flex-shrink:0}
+.dl-opt .sub{font-size:.6rem;color:var(--text3);font-weight:500;margin-top:2px}
+.dl-opt.dl-copy{border-style:dashed}
 .fx-err{font-size:.66rem;color:var(--gold);padding:6px 8px;line-height:1.8;background:rgba(245,197,24,.07);border-radius:8px;margin:4px 0}
 .dl-link.fld .sz{color:var(--blue);font-size:.6rem}
 .dl-row{display:flex;align-items:center;gap:4px}
@@ -279,6 +285,22 @@ nav{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:
   </div>
 </div>
 <div class="tc" id="tc"></div>
+<!-- ═══════════ دیالوگ: با چی دانلود بشه؟ ═══════════ -->
+<div class="modal-ov" id="dlOv" hidden>
+  <div class="modal" style="width:min(430px,95vw)">
+    <div class="modal-h">
+      <span class="modal-t">⬇ با چی دانلود بشه؟</span>
+      <button class="modal-x" id="dlClose" title="بستن">✕</button>
+    </div>
+    <div class="modal-b" style="padding:10px 12px">
+      <div id="dlTargetName" style="font-size:.7rem;color:var(--text2);margin-bottom:10px;word-break:break-all;direction:ltr;text-align:left"></div>
+      <div id="dlOptions"></div>
+      <div style="font-size:.6rem;color:var(--text3);margin-top:10px;line-height:1.8;border-top:1px solid var(--border);padding-top:8px">
+        💡 دانلودمنیجرها با نصب، خودشان به مرورگر اضافه می‌شوند. اگر باز نشد، لینک را کپی کنید و داخل برنامه ON را بزنید.
+      </div>
+    </div>
+  </div>
+</div>
 <script>
 
 
@@ -377,8 +399,58 @@ function cinePlayLink(u,title){
   if(title)p+='&title='+encodeURIComponent(title);
   return CINEPLAY_URL+p;
 }
+/* ═══════ دیالوگ انتخاب دانلودمنیجر ═══════ */
+var DL_LAST_KEY='cinemaDlLast';
+function dlManagers(){
+  return [
+    {id:'browser',ic:'🌐',n:'مرورگر',sub:'دانلود داخلی مرورگر (Chrome/Firefox/…)',act:function(u){var a=document.createElement('a');a.href=u;a.setAttribute('download','');document.body.appendChild(a);a.click();a.remove();}},
+    {id:'idm',ic:'⚡',n:'Internet Download Manager',sub:'IDM — پرسرعت‌ترین',act:function(u){location.href='idm://a?url='+encodeURIComponent(u);toast('اگر IDM باز نشد، لینک را کپی کنید','e');}},
+    {id:'fdm',ic:'🚀',n:'Free Download Manager',sub:'FDM — رایگان و متن‌باز',act:function(u){location.href='fdm://download?url='+encodeURIComponent(u);toast('اگر FDM باز نشد، لینک را کپی کنید','e');}},
+    {id:'xdm',ic:'📦',n:'Xtreme Download Manager',sub:'XDM',act:function(u){location.href='xdm://'+encodeURIComponent(u);toast('اگر XDM باز نشد، لینک را کپی کنید','e');}},
+    {id:'mipony',ic:'🐴',n:'Mipony',sub:'دانلودمنیجر تخصصی',act:function(u){location.href='mipony://'+encodeURIComponent(u);toast('اگر باز نشد، لینک را کپی کنید','e');}},
+    {id:'jdownloader',ic:'☕',n:'JDownloader',sub:'جاوا — چندپلتفرمی',act:function(u){toast('در JDownloader: Link → Add Links سپس Paste','s');copyText(u);}},
+    {id:'copy',ic:'⧉',n:'کپی لینک',sub:'برای هر برنامه دیگری — Paste در دانلودمنیجر',act:function(u){copyText(u);toast('لینک کپی شد','s');}},
+    {id:'torrent',ic:'🧲',n:'دانلود با برنامه دیگر…',sub:'لینک را در تب جدید باز کن (راست‌کلیک → Copy link)',act:function(u){window.open(u,'_blank','noopener');}}
+  ];
+}
+function copyText(t){
+  try{navigator.clipboard.writeText(t);}catch(e){
+    var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy')}catch(e2){}ta.remove();
+  }
+}
+function showDlDialog(u,title){
+  var ov=document.getElementById('dlOv');
+  var name=decodeURIComponent(String(u).split('/').pop()||'');
+  document.getElementById('dlTargetName').textContent=(title?title+' — ':'')+name;
+  var last=localStorage.getItem(DL_LAST_KEY)||'browser';
+  var mans=dlManagers();
+  /* گزینه آخر انتخاب‌شده اول لیست */
+  mans.sort(function(a,b){return (a.id===last?-1:1)-(b.id===last?-1:1);});
+  document.getElementById('dlOptions').innerHTML=mans.map(function(m,i){
+    return '<a class="dl-opt'+(m.id==='copy'?' dl-copy':'')+'" data-mid="'+m.id+'" data-u="'+esc(u)+'" href="#" onclick="return dlPick(this)">'+
+      '<span class="ic">'+m.ic+'</span><span style="flex:1"><div>'+m.n+'</div><div class="sub">'+m.sub+'</div></span>'+
+      (m.id===last?'<span style="color:var(--green);font-size:.6rem">آخرین ✓</span>':'')+
+    '</a>';
+  }).join('');
+  ov.hidden=false;
+}
+function dlPick(el){
+  var mid=el.getAttribute('data-mid'),u=el.getAttribute('data-u');
+  var m=dlManagers().filter(function(x){return x.id===mid;})[0];
+  document.getElementById('dlOv').hidden=true;
+  if(!m)return false;
+  try{localStorage.setItem(DL_LAST_KEY,mid);}catch(e){}
+  if(m)m.act(u);
+  return false;
+}
+document.getElementById('dlClose').addEventListener('click',function(){document.getElementById('dlOv').hidden=true;});
+document.getElementById('dlOv').addEventListener('click',function(e){if(e.target.id==='dlOv')this.hidden=true;});
+/* هرEsc ببند */
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('dlOv').hidden=true;});
+
 function dlAnchor(u,q,size){
-  return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" target="_blank" rel="noopener">▶ '+esc(q)+(size?' <span class="sz">'+esc(size)+'</span>':'')+'</a>'+
+  return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" onclick="showDlDialog(\''+encodeURIComponent(u)+'\',\''+encodeURIComponent(CUR_TITLE||'')+'\');return false" title="دانلود — انتخاب دانلودمنیجر">⬇ '+esc(q)+(size?' <span class="sz">'+esc(size)+'</span>':'')+'</a>'+
     '<a class="cp play-btn" href="'+esc(cinePlayLink(u,CUR_TITLE))+'" target="_blank" rel="noopener" title="پخش آنلاین با سینما پلی">🎬 پخش</a>'+
     '<button class="cp" data-u="'+esc(u)+'" title="کپی لینک">⧉</button></div>';
 }
