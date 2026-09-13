@@ -117,9 +117,9 @@ nav{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:
 .modal-x{background:var(--card);border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer;transition:.2s}
 .modal-x:hover{color:var(--accent);border-color:var(--accent)}
 .modal-b{padding:14px 16px;overflow-y:auto}
-.m-backdrop{height:170px;overflow:hidden;position:relative;background:var(--bg2)}
-.m-backdrop img{width:100%;height:100%;object-fit:cover;object-position:center 20%}
-.m-backdrop::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,var(--card) 0%,transparent 55%)}
+.m-backdrop{position:relative;overflow:hidden;background:var(--bg2);height:auto;aspect-ratio:16/9;max-height:310px}
+.m-backdrop img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.m-backdrop::after{content:'';position:absolute;left:0;right:0;bottom:0;height:26%;background:linear-gradient(to top,var(--card) 0%,rgba(25,25,32,0) 100%);pointer-events:none}
 .m-head{display:flex;gap:14px;margin-bottom:6px}
 .m-head.with-bd{margin:-48px 14px 6px;position:relative;z-index:1}
 .m-poster{width:110px;height:165px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--bg2);box-shadow:0 8px 26px rgba(0,0,0,.5)}
@@ -429,6 +429,20 @@ async function fetchFolderListing(url){
   return [];
 }
 window.FOLDER_CACHE={};
+/* باز/بسته شدن فصل — همه پوشه‌های کیفیت را خودکار به اپیزود تبدیل کن */
+window.seasonToggled=function(det){
+  if(!det.open||det.dataset.auto==='1')return;
+  det.dataset.auto='1';
+  var btns=det.querySelectorAll('.cp[data-f]');
+  if(btns.length){
+    btns.forEach(function(b){
+      var holder=b.closest('.dl-row').nextElementSibling;
+      if(!holder||!holder.classList.contains('fx-files'))return;
+      if(holder.dataset.loaded==='1'){holder.style.display='block';holder.dataset.open='1';return;}
+      openFolderFiles(b,b.getAttribute('data-f'));
+    });
+  }
+};
 window.openFolderFiles=async function(btn,url){
   var holder=btn.closest('.dl-row').nextElementSibling;
   if(!holder||!holder.classList.contains('fx-files'))return;
@@ -485,7 +499,7 @@ function buildDLSection(item){
       var seasons=groups[grp];
       h+='<div class="sub-h">'+subLabel(grp)+'</div>';
       seasons.forEach(function(s){
-        h+='<details style="margin-bottom:4px"><summary class="season-h">📀 فصل '+esc(s.num)+' ('+s.links.length+' کیفیت)</summary>';
+        h+='<details style="margin-bottom:4px" ontoggle="seasonToggled(this)"><summary class="season-h">📀 فصل '+esc(s.num)+' ('+s.links.length+' کیفیت)</summary>';
         s.links.forEach(function(l){
           h+=dlRow(l);
         });
