@@ -16,13 +16,20 @@ const SERVERS = [
   'https://dl12.sermoviedown.pw',
 ];
 
-function fetch(url) {
+const UA = 'Mozilla/5.0 (compatible; CinemaCrawler/1.0; +https://github.com/mohsen-niksirat/Cinema)';
+
+function fetch(url, redirects) {
+  redirects = redirects || 0;
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { timeout: 15000 }, (res) => {
+    if (redirects > 5) return reject(new Error(`Too many redirects: ${url}`));
+    const req = https.get(url, { timeout: 15000, headers: { 'User-Agent': UA } }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return fetch(res.headers.location).then(resolve).catch(reject);
+        res.resume();
+        let next;
+        try { next = new URL(res.headers.location, url).href; } catch (e) { return reject(e); }
+        return fetch(next, redirects + 1).then(resolve).catch(reject);
       }
-      if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
+      if (res.statusCode !== 200) { res.resume(); return reject(new Error(`HTTP ${res.statusCode}`)); }
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => resolve(data));
@@ -257,14 +264,36 @@ async function main() {
   const outDir = path.join(__dirname, '..', 'public');
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
   const outPath = path.join(outDir, 'db.json');
-  fs.writeFileSync(outPath, JSON.stringify(db));
+
+  // Write only when titles/links actually changed (ignoring crawledAt) — otherwise the
+  // GitHub Action would produce an empty "update" commit every 6 hours.
+  let changed = true;
+  let oldTotal = 0;
+  try {
+    const old = JSON.parse(fs.readFileSync(outPath, 'utf8'));
+    oldTotal = ((old.m || []).length) + ((old.s || []).length) + ((old.a || []).length);
+    changed = JSON.stringify([old.m, old.s, old.a]) !== JSON.stringify([db.m, db.s, db.a]);
+  } catch (e) {}
+
+  // Guard: if this crawl saw far less content than the previous one (some servers were
+  // down), keep the previous db.json instead of publishing a partial dataset.
+  const newTotal = db.m.length + db.s.length + db.a.length;
+  if (oldTotal > 0 && newTotal < oldTotal * 0.9) {
+    console.log(`Crawl looks incomplete (${newTotal} items vs ${oldTotal} before) — keeping previous db.json.`);
+    changed = false;
+  }
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
   console.log(`\n=== Done in ${elapsed}s ===`);
   console.log(`Movies: ${allMovies.length}`);
   console.log(`Series: ${allSeries.length}`);
   console.log(`Anime: ${allAnime.length}`);
-  console.log(`Output: ${(fs.statSync(outPath).size / 1024 / 1024).toFixed(2)} MB`);
+  if (changed) {
+    fs.writeFileSync(outPath, JSON.stringify(db));
+    console.log(`Output updated: ${(fs.statSync(outPath).size / 1024 / 1024).toFixed(2)} MB`);
+  } else {
+    console.log('No content changes since last crawl — db.json left untouched (no commit).');
+  }
 }
 
 main().catch(e => { console.error('Fatal:', e); process.exit(1); });

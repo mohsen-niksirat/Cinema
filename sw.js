@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cinema-v18';
+const CACHE_NAME = 'cinema-v19';
 const IMG_CACHE = 'cinema-imgs';
 const STATIC_ASSETS = [
   './',
@@ -33,13 +33,15 @@ self.addEventListener('message', event => {
 
 // Install: cache static assets (don't fail if one asset is missing)
 self.addEventListener('install', event => {
+  // Only announce an update when a previous SW was active — first install must stay silent
+  const isUpdate = !!self.registration.active;
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache =>
       Promise.allSettled(STATIC_ASSETS.map(url =>
         fetch(url).then(r => { if (r.ok) return cache.put(url, r); }).catch(() => {})
       ))
     )
-  ).then(() => notifyClients());
+  ).then(() => { if (isUpdate) notifyClients(); });
 });
 
 // Activate: clean old app caches, keep the image cache

@@ -78,12 +78,12 @@ npx serve .
 ## 📁 ساختار
 
 ```
-├── index.html              # اپلیکیشن اصلی (تک‌فایل)
+├── index.html              # اپلیکیشن اصلی (دیتا در public/ جدا شده)
 ├── manifest.json / sw.js   # PWA
 ├── public/
+│   ├── archive.json        # آرشیو اصلی: ۱۱.۵هزار فیلم + ۲.۸هزار سریال (لود async در شروع)
 │   ├── db.json             # خروجی کرالر سرمووی
-│   ├── collections.json    # پک‌های تب «معرفی» (با کاور)
-│   └── archive.json        # آرشیو (legacy)
+│   └── collections.json    # پک‌های تب «معرفی» (با کاور)
 ├── scripts/
 │   ├── crawl.js            # کرالر سرمووی (GitHub Actions)
 │   └── build_collections.js# سازنده پک‌های معرفی (از دیتای CineScore)
