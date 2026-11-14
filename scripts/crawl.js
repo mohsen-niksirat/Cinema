@@ -98,9 +98,10 @@ function extractYear(dir) {
 
 const isMedia = (fn) => /\.(mkv|mp4|avi)$/i.test(fn);
 
-// Walk a single movie/show directory
+// Walk a single movie/show directory (year may be empty for title-level categories like Anime)
 async function walkItem(server, category, year, itemDir) {
-  const baseUrl = `${server}/${category}/${year}/${itemDir}/`;
+  const yearSeg = year ? `/${year}` : '';
+  const baseUrl = `${server}/${category}${yearSeg}/${itemDir}/`;
   try {
     const html = await fetchRetry(baseUrl);
     const entries = parseLinks(html);
@@ -216,12 +217,15 @@ async function main() {
       catch (e) { console.error(`  Cannot list ${cat}: ${e.message}`); continue; }
 
       const years = parseLinks(yearHtml).filter(e => e.href.endsWith('/') && /^\d{4}/.test(e.name)).map(e => e.href.replace(/\/$/, ''));
-      console.log(`  ${cat}/ years: ${years.join(', ')}`);
+      // Some servers organize anime without a year level (e.g. dl3: <Anime>/<Title>/...) — walk it title-level
+      const walkLevels = years.length ? years : (/anime/i.test(cat) ? [''] : []);
+      console.log(`  ${cat}/ levels: ${years.length ? 'years: ' + years.join(', ') : (walkLevels.length ? 'title-level (no year dirs)' : 'no year dirs — skipped')}`);
 
-      for (const year of years) {
-        // Step 3: List items in year
+      for (const year of walkLevels) {
+        // Step 3: List items in year (or directly in the category for title-level)
+        const levelUrl = `${server}/${cat}/${year ? year + '/' : ''}`;
         let itemsHtml;
-        try { itemsHtml = await fetchRetry(`${server}/${cat}/${year}/`); }
+        try { itemsHtml = await fetchRetry(levelUrl); }
         catch (e) { console.error(`  Cannot list ${cat}/${year}: ${e.message}`); continue; }
 
         const items = parseLinks(itemsHtml).filter(e => e.href.endsWith('/'));
@@ -296,4 +300,8 @@ async function main() {
   }
 }
 
-main().catch(e => { console.error('Fatal:', e); process.exit(1); });
+if (require.main === module) {
+  main().catch(e => { console.error('Fatal:', e); process.exit(1); });
+}
+
+module.exports = { fetchRetry, parseLinks, extractQuality, extractSubType, cleanName, extractYear, walkItem, isMedia };
