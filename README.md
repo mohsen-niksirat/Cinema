@@ -61,6 +61,7 @@
 
 ## 🔄 بروزرسانی خودکار (GitHub Actions)
 - **Cinema** — هر ۶ ساعت کرالر (`scripts/crawl.js`) سرورهای سرمووی را می‌پیماید و `public/db.json` را به‌روز می‌کند
+- **کرالر محلی (ویندوز)** — `scripts/crawl_local.ps1` با Task Scheduler («Cinema Local Crawler») هر ۶ ساعت از لپ‌تاپ کرال می‌کند و فقط در صورت تغییر واقعی محتوا push می‌کند؛ با ران Actions هم بدون تداخل کار می‌کند (pull --rebase + retry). اجرای دستی: `Start-ScheduledTask 'Cinema Local Crawler'`
 - **CineScore** — هر شب داده‌ها را از TMDB/OMDb/Wikipedia جمع می‌کند، پوسترها را سلف‌هاست می‌کند و `titles.json` / `db.json` را بازنویسی می‌کند
 
 ## 🚀 اجرا
