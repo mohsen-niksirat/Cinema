@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cinema-v19';
+const CACHE_NAME = 'cinema-v20';
 const IMG_CACHE = 'cinema-imgs';
 const STATIC_ASSETS = [
   './',
@@ -7,7 +7,11 @@ const STATIC_ASSETS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
-  './public/collections.json'
+  './public/collections.json',
+  './fonts/vazirmatn.css',
+  './fonts/vazirmatn-var-arabic.woff2',
+  './fonts/vazirmatn-var-latin.woff2',
+  './fonts/vazirmatn-var-latin-ext.woff2'
 ];
 
 // Notify all open clients that a new version has been installed
