@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎬 دنیای فیلم و سریال</title>
+<title>سینما: دنیای فیلم و سریال</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d0d0d">
 <meta name="mobile-web-app-capable" content="yes">
@@ -14,290 +14,359 @@
 <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
-<meta name="theme-color" content="#0d0d0d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+/*
+ * Design Decisions (R-31):
+ * - Color & Gradients (R-01, R-29): Dark theatrical slate (#0a0a0c) + cinema crimson (#e50914) + warm gold (#f5c518) for ratings; crimson gradient separates active navigation/primary actions from surface cards.
+ * - Typography (R-06): Vazirmatn chosen for authentic Persian RTL legibility and tabular numerals across dense movie metadata.
+ * - Layout & Rhythm (R-05): Responsive poster grid (2:3 aspect ratio) paired with a wide 16:9 collection cover grid and horizontal detail rows to match distinct content types.
+ * - Glassmorphism & Shadow (R-10, R-12): Backdrop blur restricted to sticky header and modal backdrop (2 elements max); elevation shadow used only on hovered cards and modals to establish depth.
+ * - Icons (R-04): Custom inline SVGs directly representing film reels, TV screens, search, star ratings, and download actions.
+ * - Animations (R-19): Subtle 200ms hover lift on cards and modal entrance fade to guide visual focus; fully disabled under prefers-reduced-motion.
+ */
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0a0a0c;--bg2:#15151a;--card:#191920;--border:#282833;--text:#ececf1;--text2:#8f8f9c;--text3:#5f5f6b;--accent:#e50914;--gold:#f5c518;--green:#46d369;--blue:#3b9eff;--grad:linear-gradient(135deg,#e50914,#ff5f3d);--glow:0 8px 28px rgba(229,9,20,.28);--shadow:0 18px 50px rgba(0,0,0,.5);--font:'Vazirmatn',system-ui,sans-serif}
-[data-theme="light"]{--bg:#f3f4f8;--bg2:#ffffff;--card:#ffffff;--border:#e2e4ec;--text:#141419;--text2:#5d616b;--text3:#989ca6;--glow:0 8px 28px rgba(229,9,20,.16);--shadow:0 18px 50px rgba(30,32,60,.15)}
-html{scroll-behavior:smooth}
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
-body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(900px 500px at 88% -8%,rgba(229,9,20,.18),transparent 60%),radial-gradient(760px 460px at 8% -6%,rgba(255,95,61,.10),transparent 55%),radial-gradient(900px 520px at 50% 115%,rgba(59,158,255,.06),transparent 60%)}
-[data-theme="light"] body::before{background:radial-gradient(900px 500px at 88% -8%,rgba(229,9,20,.09),transparent 60%),radial-gradient(760px 460px at 8% -6%,rgba(255,95,61,.07),transparent 55%)}
+:root{--bg:#0a0a0c;--bg2:#15151a;--card:#191920;--border:#282833;--text:#ececf1;--text2:#a0a0b0;--text3:#8e8ea0;--accent:#e50914;--gold:#f5c518;--gold-text:#f5c518;--green:#2ea84f;--blue:#3b9eff;--grad:linear-gradient(135deg,#e50914,#ff5f3d);--glow:0 8px 28px rgba(229,9,20,.28);--shadow:0 18px 50px rgba(0,0,0,.5);--font:'Vazirmatn',system-ui,sans-serif}
+[data-theme="light"]{--bg:#f3f4f8;--bg2:#ffffff;--card:#ffffff;--border:#d4d8e4;--text:#141419;--text2:#454852;--text3:#5e626e;--accent:#c90812;--gold:#d4a000;--gold-text:#8a6500;--green:#1e7e38;--blue:#0066cc;--glow:0 8px 24px rgba(201,8,18,.18);--shadow:0 16px 40px rgba(20,22,45,.12)}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(900px 500px at 88% -8%,rgba(229,9,20,.15),transparent 60%),radial-gradient(760px 460px at 8% -6%,rgba(255,95,61,.08),transparent 55%)}
+[data-theme="light"] body::before{background:radial-gradient(900px 500px at 88% -8%,rgba(201,8,18,.07),transparent 60%),radial-gradient(760px 460px at 8% -6%,rgba(255,95,61,.05),transparent 55%)}
 ::selection{background:rgba(229,9,20,.4);color:#fff}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
-nav{position:sticky;top:0;z-index:50;padding:12px 18px;display:flex;align-items:center;gap:12px;background:rgba(10,10,12,.8);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);border-bottom:1px solid var(--border)}
-[data-theme="light"] nav{background:rgba(243,244,248,.82)}
-.logo{font-size:1.15rem;font-weight:900;white-space:nowrap;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
-.nr{margin-right:auto;display:flex;align-items:center;gap:8px}
-.sb{display:flex;align-items:center;background:var(--bg2);border-radius:24px;border:1px solid var(--border);transition:.25s;flex:1;max-width:420px;overflow:hidden}
+a[href],button,summary,select,label[for],input[type="checkbox"],input[type="radio"],[role="button"],[role="tab"],[role="switch"]{cursor:pointer}
+button:disabled,[aria-disabled="true"]{cursor:not-allowed}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+svg.ic-svg{display:inline-block;vertical-align:middle;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+header.site-hdr{position:sticky;top:0;z-index:50;padding:10px 18px;display:flex;align-items:center;gap:12px;background:rgba(10,10,12,.85);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--border)}
+[data-theme="light"] header.site-hdr{background:rgba(243,244,248,.88)}
+.logo{font-size:1.15rem;font-weight:900;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.logo svg{stroke:#e50914}
+.nr{margin-right:auto;display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end}
+.sb{display:flex;align-items:center;background:var(--bg2);border-radius:24px;border:1px solid var(--border);transition:border-color .2s,box-shadow .2s;flex:1;max-width:420px;min-height:44px;padding:0 4px}
 .sb:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(229,9,20,.16)}
-.sb input{background:none;border:none;color:var(--text);padding:9px 12px;font:inherit;font-size:.8rem;flex:1;outline:none;min-width:0}
-.sb button{background:none;border:none;color:var(--text2);cursor:pointer;padding:9px;font-size:.85rem;transition:.2s}
-.sb button:hover{color:var(--accent)}
-.ib{background:none;border:none;color:var(--text2);cursor:pointer;font-size:.9rem;padding:8px;border-radius:50%;transition:.25s}
-.ib:hover{color:var(--text);background:rgba(255,255,255,.08);transform:scale(1.08)}
-.tabs{display:flex;gap:7px;padding:14px 16px 4px;flex-wrap:wrap}
-.tab{padding:8px 16px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font:inherit;font-size:.78rem;font-weight:700;cursor:pointer;border-radius:999px;transition:.25s}
+.sb input{background:none;border:none;color:var(--text);padding:8px 12px;font:inherit;font-size:.82rem;flex:1;outline:none;min-width:0}
+.sb input::placeholder,.lsearch input::placeholder{color:var(--text3)}
+.sb button{background:none;border:none;color:var(--text2);width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;transition:color .2s,background-color .2s}
+.sb button:hover{color:var(--accent);background:rgba(229,9,20,.08)}
+.sb button:active{transform:scale(.95)}
+.ib{background:var(--bg2);border:1px solid var(--border);color:var(--text);width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s,background-color .2s;flex-shrink:0}
+.ib:hover{color:var(--accent);border-color:var(--accent);background:rgba(229,9,20,.08)}
+.ib:active{transform:scale(.95)}
+nav.tabs{display:flex;gap:8px;padding:14px 18px 4px;flex-wrap:wrap;max-width:1180px;width:100%;margin:0 auto}
+.tab{min-height:44px;padding:8px 18px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font:inherit;font-size:.82rem;font-weight:700;border-radius:12px;display:inline-flex;align-items:center;gap:7px;transition:color .2s,border-color .2s,background .2s,box-shadow .2s}
 .tab:hover{color:var(--text);border-color:var(--text3)}
+.tab:active{transform:scale(.98)}
 .tab.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:var(--glow)}
-.main{max-width:1180px;margin:0 auto;padding:16px}
-.load-box{background:var(--card);border:1px dashed var(--border);border-radius:18px;padding:34px;text-align:center;margin-bottom:16px;transition:.3s}
-.load-box:hover,.load-box.drag{border-color:var(--accent);background:rgba(229,9,20,.05);box-shadow:var(--glow)}
-.load-box .icon{font-size:2.5rem;margin-bottom:8px;opacity:.55}
-.load-box p{font-size:.82rem;color:var(--text2);margin-bottom:10px}
-.btn{padding:9px 20px;border:none;border-radius:10px;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:.25s;display:inline-flex;align-items:center;gap:6px}
-.btn-p{background:var(--grad);color:#fff;box-shadow:var(--glow)}.btn-p:hover{filter:brightness(1.12);transform:translateY(-1px)}
-.btn-g{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-g:hover{border-color:var(--accent);color:var(--accent)}
-.results-info{font-size:.75rem;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.results-count{font-weight:800;color:var(--accent);font-size:.9rem}
-.filters{display:flex;gap:5px;flex-wrap:wrap}
-.fbtn{padding:4px 12px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font:inherit;font-size:.62rem;font-weight:700;border-radius:999px;cursor:pointer;transition:.25s;white-space:nowrap}
+main.main{max-width:1180px;width:100%;margin:0 auto;padding:16px;flex:1}
+.load-box{background:var(--card);border:1px dashed var(--border);border-radius:18px;padding:34px;text-align:center;margin-bottom:16px;transition:border-color .25s,background-color .25s}
+.load-box:hover,.load-box.drag{border-color:var(--accent);background:rgba(229,9,20,.05)}
+.load-box .icon{margin-bottom:10px;color:var(--accent);display:flex;justify-content:center}
+.load-box p{font-size:.85rem;color:var(--text2);margin-bottom:12px}
+.btn{min-height:44px;padding:10px 20px;border:none;border-radius:10px;font:inherit;font-size:.82rem;font-weight:700;transition:filter .2s,border-color .2s,color .2s,transform .15s;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn-p{background:var(--grad);color:#fff;box-shadow:var(--glow)}.btn-p:hover{filter:brightness(1.12)}.btn-p:active{transform:scale(.98)}
+.btn-g{background:var(--bg2);color:var(--text);border:1px solid var(--border)}.btn-g:hover{border-color:var(--accent);color:var(--accent)}.btn-g:active{transform:scale(.98)}
+.results-info{font-size:.8rem;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.results-count{font-weight:800;color:var(--accent);font-size:.95rem}
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.fbtn{min-height:44px;padding:6px 14px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font:inherit;font-size:.74rem;font-weight:700;border-radius:10px;transition:color .2s,border-color .2s,background .2s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
 .fbtn:hover{color:var(--accent);border-color:var(--accent)}
+.fbtn:active{transform:scale(.97)}
 .fbtn.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:var(--glow)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .25s,box-shadow .25s,border-color .25s;display:flex;flex-direction:column}
-.card:hover{transform:translateY(-4px);box-shadow:var(--shadow),var(--glow);border-color:rgba(229,9,20,.55)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(164px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;display:flex;flex-direction:column;position:relative}
+.card:hover,.card:focus-visible{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--accent)}
 .card-top{display:block;padding:0;position:relative}
 .card-poster{width:100%;height:auto;aspect-ratio:2/3;overflow:hidden;position:relative;background:var(--bg2)}
-.card-poster img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
-.card:hover .card-poster img{transform:scale(1.06)}
-.card-poster .ni{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.2rem;background:var(--bg2)}
-.rt-f{position:absolute;top:8px;right:8px;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);color:var(--gold);font-size:.62rem;font-weight:800;z-index:2}
-.card-info{flex:1;min-width:0;padding:10px 11px 11px;display:flex;flex-direction:column;gap:5px}
-.card-title{font-size:.78rem;font-weight:800;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.1em}
-.card-meta{display:flex;gap:3px;flex-wrap:wrap}
-.cb{padding:2px 6px;border-radius:5px;font-size:.55rem;font-weight:700}
-.cb-r{background:rgba(245,197,24,.15);color:var(--gold)}.cb-y{background:rgba(255,255,255,.08);color:var(--text2)}.cb-t{background:rgba(229,9,20,.13);color:var(--accent)}.cb-v{background:rgba(255,255,255,.05);color:var(--text2);font-size:.5rem}
-.season-info{font-size:.6rem;color:var(--accent);font-weight:700}
-.card-quals{display:flex;gap:3px;flex-wrap:wrap}
-.qt{padding:1px 6px;border-radius:4px;font-size:.5rem;font-weight:700;border:1px solid var(--border);color:var(--text2)}
+.card-poster img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.card:hover .card-poster img{transform:scale(1.04)}
+.card-poster .ni{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text3);background:var(--bg2)}
+.rt-f{position:absolute;top:8px;right:8px;padding:3px 8px;border-radius:8px;background:rgba(10,10,12,.84);color:var(--gold);font-size:.68rem;font-weight:800;z-index:2;display:inline-flex;align-items:center;gap:3px;border:1px solid rgba(245,197,24,.3)}
+.card-info{flex:1;min-width:0;padding:11px 12px 12px;display:flex;flex-direction:column;gap:6px}
+.card-title{font-size:.82rem;font-weight:800;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.2em;color:var(--text)}
+.card-meta{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.cb{padding:2px 7px;border-radius:6px;font-size:.64rem;font-weight:700;display:inline-flex;align-items:center;gap:3px}
+.cb-r{background:rgba(245,197,24,.16);color:var(--gold-text)}.cb-y{background:var(--bg2);border:1px solid var(--border);color:var(--text2)}.cb-t{background:rgba(229,9,20,.14);color:var(--accent)}.cb-v{background:var(--bg2);color:var(--text2);font-size:.6rem}
+.season-info{font-size:.66rem;color:var(--accent);font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.card-quals{display:flex;gap:4px;flex-wrap:wrap}
+.qt{padding:2px 6px;border-radius:5px;font-size:.58rem;font-weight:700;border:1px solid var(--border);color:var(--text2)}
 .qt.q1{border-color:var(--accent);color:var(--accent)}.qt.q2{border-color:var(--blue);color:var(--blue)}
-.card-plot{font-size:.58rem;color:var(--text2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.card-body{padding:0 11px 11px;margin-top:auto}
+.card-plot{font-size:.66rem;color:var(--text2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-body{padding:0 12px 12px;margin-top:auto}
 .card-dl{display:none;margin-top:6px;border-top:1px solid var(--border);padding-top:6px;max-height:260px;overflow-y:auto}
 .card.open .card-dl{display:block}
-.season-h{font-size:.68rem;font-weight:800;color:var(--accent);margin:6px 0 3px;padding:3px 0;border-bottom:1px solid var(--border);cursor:pointer}
-.sub-h{font-size:.62rem;font-weight:700;color:var(--gold);margin:4px 0 2px}
-.copyall{display:inline-flex;align-items:center;gap:5px;margin:0 0 8px;padding:6px 12px;border-radius:8px;border:1px dashed var(--border);background:var(--bg2);color:var(--text2);font:inherit;font-size:.62rem;font-weight:700;cursor:pointer;transition:.2s}
+.season-h{font-size:.76rem;font-weight:800;color:var(--accent);margin:6px 0 3px;padding:8px 6px;border-bottom:1px solid var(--border);cursor:pointer;min-height:44px;display:flex;align-items:center;gap:6px}
+.sub-h{font-size:.72rem;font-weight:800;color:var(--gold-text);margin:8px 0 4px;display:flex;align-items:center;gap:5px}
+.copyall{display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;min-height:44px;padding:8px 14px;border-radius:9px;border:1px dashed var(--border);background:var(--bg2);color:var(--text);font:inherit;font-size:.72rem;font-weight:700;transition:border-color .2s,color .2s}
 .copyall:hover{border-color:var(--accent);color:var(--accent)}
 .copyall:disabled{opacity:.6}
-.fx-files{padding:2px 10px 4px 0;margin:2px 10px 4px 0;border-right:2px solid var(--border)}
+.fx-files{padding:4px 10px 6px 0;margin:4px 10px 6px 0;border-right:2px solid var(--border)}
 .fx-files .dl-row .cp[data-f]{display:none}
 /* دیالوگ انتخاب دانلودمنیجر */
-.dl-opt{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--border);background:var(--bg2);border-radius:11px;cursor:pointer;color:var(--text);font:inherit;font-size:.78rem;font-weight:700;margin-bottom:7px;transition:.15s;text-align:right;text-decoration:none}
-.dl-opt:hover{border-color:var(--accent);transform:translateX(-2px)}
-.dl-opt .ic{font-size:1.15rem;flex-shrink:0}
-.dl-opt .sub{font-size:.6rem;color:var(--text3);font-weight:500;margin-top:2px}
+.dl-opt{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:10px 12px;border:1px solid var(--border);background:var(--bg2);border-radius:11px;cursor:pointer;color:var(--text);font:inherit;font-size:.8rem;font-weight:700;margin-bottom:7px;transition:border-color .15s,background-color .15s;text-align:right;text-decoration:none}
+.dl-opt:hover{border-color:var(--accent);background:rgba(229,9,20,.05)}
+.dl-opt .ic{font-size:1.15rem;flex-shrink:0;color:var(--accent);display:flex;align-items:center}
+.dl-opt .sub{font-size:.66rem;color:var(--text2);font-weight:500;margin-top:2px}
 .dl-opt.dl-copy{border-style:dashed}
-.fx-err{font-size:.66rem;color:var(--gold);padding:6px 8px;line-height:1.8;background:rgba(245,197,24,.07);border-radius:8px;margin:4px 0}
-.dl-link.fld .sz{color:var(--blue);font-size:.6rem}
-.dl-row{display:flex;align-items:center;gap:4px}
-.dl-link{display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:5px;font-size:.6rem;color:var(--text2);text-decoration:none;transition:.15s;margin-bottom:1px;flex:1;min-width:0}
-.dl-link:hover{background:rgba(229,9,20,.1);color:var(--accent)}
-.dl-link .sz{margin-right:auto;font-size:.54rem;color:var(--text3)}
-.cp{flex-shrink:0;width:24px;height:22px;border:1px solid var(--border);background:none;color:var(--text2);border-radius:5px;cursor:pointer;font-size:.6rem;line-height:1}
+.fx-err{font-size:.72rem;color:var(--gold-text);padding:8px 10px;line-height:1.8;background:rgba(245,197,24,.1);border:1px solid rgba(245,197,24,.25);border-radius:8px;margin:4px 0}
+.dl-link.fld .sz{color:var(--blue);font-size:.66rem}
+.dl-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
+.dl-link{display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 10px;border-radius:8px;font-size:.72rem;color:var(--text);background:var(--bg2);border:1px solid var(--border);text-decoration:none;transition:border-color .15s,color .15s;flex:1;min-width:140px}
+.dl-link:hover{border-color:var(--accent);color:var(--accent)}
+.dl-link .sz{margin-right:auto;font-size:.64rem;color:var(--text2)}
+.cp{flex-shrink:0;min-width:44px;min-height:44px;padding:0 10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);border-radius:8px;cursor:pointer;font-size:.72rem;display:inline-flex;align-items:center;justify-content:center;gap:4px;transition:color .15s,border-color .15s}
 .cp:hover{color:var(--accent);border-color:var(--accent)}
-.play-btn{width:auto;padding:0 9px;background:var(--grad);color:#fff!important;border:none!important;font-weight:800;text-decoration:none!important;display:inline-flex;align-items:center;gap:4px;font-size:.58rem}
-.play-btn:hover{filter:brightness(1.18);box-shadow:0 0 10px rgba(229,9,20,.45)}
+.play-btn{width:auto;padding:0 12px;background:var(--grad);color:#fff!important;border:none!important;font-weight:800;text-decoration:none!important;display:inline-flex;align-items:center;gap:5px;font-size:.7rem;min-height:44px}
+.play-btn:hover{filter:brightness(1.15)}
 .play-btn svg{flex-shrink:0}
-.imdb-a{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;background:var(--gold);color:#000;border-radius:4px;text-decoration:none;font-size:.58rem;font-weight:700;margin-top:4px}
-.pg{display:flex;justify-content:center;gap:5px;padding:16px 0;flex-wrap:wrap}
-.pb{padding:5px 12px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font:inherit;font-size:.68rem;border-radius:7px;cursor:pointer;transition:.2s}
+.imdb-a{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:6px 10px;background:var(--gold);color:#000;border-radius:6px;text-decoration:none;font-size:.68rem;font-weight:700;margin-top:4px}
+.pg{display:flex;justify-content:center;gap:6px;padding:20px 0;flex-wrap:wrap}
+.pb{min-width:44px;min-height:44px;padding:6px 14px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font:inherit;font-size:.78rem;font-weight:700;border-radius:9px;cursor:pointer;transition:border-color .2s,color .2s,background .2s;display:inline-flex;align-items:center;justify-content:center}
 .pb:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
-.pb:disabled{opacity:.3}.pb.act{background:var(--grad);color:#fff;border-color:transparent;box-shadow:var(--glow)}
-.prog{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;text-align:center}
-.prog-bar{height:5px;background:var(--border);border-radius:4px;overflow:hidden;margin:6px 0}
+.pb:disabled{opacity:.35;cursor:not-allowed}.pb.act{background:var(--grad);color:#fff;border-color:transparent;box-shadow:var(--glow)}
+.prog{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;text-align:center}
+.prog-bar{height:6px;background:var(--border);border-radius:4px;overflow:hidden;margin:8px 0}
 .prog-fill{height:100%;background:var(--grad);border-radius:4px;transition:width .3s}
-.prog-text{font-size:.72rem;color:var(--text2)}
-.tc{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:3px;pointer-events:none}
-.tt{padding:7px 14px;border-radius:10px;color:#fff;font-size:.7rem;pointer-events:auto;animation:si .3s;box-shadow:var(--shadow)}.tt-s{background:var(--green)}.tt-e{background:var(--accent)}@keyframes si{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-.empty{text-align:center;padding:34px;color:var(--text2);grid-column:1/-1}.empty .ic{font-size:2rem;margin-bottom:6px;opacity:.45}
-.sp{display:inline-block;width:18px;height:18px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.prog-text{font-size:.78rem;color:var(--text2)}
+.tc{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10001;display:flex;flex-direction:column;gap:5px;pointer-events:none}
+.tt{padding:9px 16px;border-radius:10px;color:#fff;font-size:.78rem;font-weight:700;pointer-events:auto;animation:si .25s ease;box-shadow:var(--shadow)}.tt-s{background:var(--green)}.tt-e{background:var(--accent)}@keyframes si{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.empty{text-align:center;padding:42px 20px;color:var(--text2);grid-column:1/-1;background:var(--card);border:1px solid var(--border);border-radius:14px}.empty .ic{margin-bottom:10px;color:var(--text3);display:flex;justify-content:center}
+.sp{display:inline-block;width:20px;height:20px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px}::-webkit-scrollbar-thumb:hover{background:var(--text3)}
-.cs-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;background:var(--grad);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:.6rem;font-weight:800;cursor:pointer;transition:.2s;margin-top:4px;text-decoration:none;white-space:nowrap}
-.cs-btn:hover{filter:brightness(1.15);transform:scale(1.03)}
-.cs-btn:active{transform:scale(.97)}
+.cs-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:8px 12px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:9px;font-family:var(--font);font-size:.7rem;font-weight:700;cursor:pointer;transition:border-color .2s,color .2s,background .2s;margin-top:auto;text-decoration:none;white-space:nowrap}
+.cs-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(229,9,20,.06)}
+.cs-btn:active{transform:scale(.98)}
 /* ---- modal (پاپ‌آپ جزئیات) ---- */
-.modal-ov{position:fixed;inset:0;z-index:9999;background:rgba(5,5,10,.82);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:18px}
+.modal-ov{position:fixed;inset:0;z-index:9999;background:rgba(5,5,10,.84);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:16px}
 .modal-ov[hidden]{display:none}
-.modal{width:min(700px,95vw);max-height:88vh;background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow);animation:mfade .25s ease}
-@keyframes mfade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.modal-h{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
-.modal-t{font-size:.95rem;font-weight:800;flex:1;min-width:0}
-.modal-x{background:var(--card);border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer;transition:.2s}
+.modal{width:min(720px,96vw);max-height:90vh;background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow);animation:mfade .22s ease}
+@keyframes mfade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.modal-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.modal-t{font-size:1rem;font-weight:800;flex:1;min-width:0;color:var(--text)}
+.modal-x{background:var(--card);border:1px solid var(--border);color:var(--text2);width:44px;height:44px;border-radius:10px;cursor:pointer;transition:color .2s,border-color .2s;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .modal-x:hover{color:var(--accent);border-color:var(--accent)}
-.modal-b{padding:14px 16px;overflow-y:auto}
-.m-backdrop{position:relative;overflow:hidden;background:var(--bg2);height:auto;aspect-ratio:16/9;max-height:310px}
+.modal-b{padding:16px;overflow-y:auto}
+.m-backdrop{position:relative;overflow:hidden;background:var(--bg2);height:auto;aspect-ratio:16/9;max-height:300px;border-radius:12px;margin-bottom:12px}
 .m-backdrop img{width:100%;height:100%;object-fit:cover;object-position:center top}
-.m-backdrop::after{content:'';position:absolute;left:0;right:0;bottom:0;height:26%;background:linear-gradient(to top,var(--card) 0%,rgba(25,25,32,0) 100%);pointer-events:none}
-.m-head{display:flex;gap:14px;margin-bottom:6px}
-.m-head.with-bd{margin:-48px 14px 6px;position:relative;z-index:1}
-.m-poster{width:110px;height:165px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--bg2);box-shadow:0 8px 26px rgba(0,0,0,.5)}
+.m-backdrop::after{content:'';position:absolute;left:0;right:0;bottom:0;height:35%;background:linear-gradient(to top,var(--card) 0%,transparent 100%);pointer-events:none}
+.m-head{display:flex;gap:14px;margin-bottom:10px}
+.m-head.with-bd{margin:-54px 12px 10px;position:relative;z-index:1}
+.m-poster{width:112px;height:168px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--bg2);box-shadow:0 8px 24px rgba(0,0,0,.45);border:1px solid var(--border)}
 .m-poster img{width:100%;height:100%;object-fit:cover}
-.m-poster .ni{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.4rem;color:var(--text3)}
+.m-poster .ni{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text3)}
 .m-info{flex:1;min-width:0}
-.m-t{font-size:1.15rem;font-weight:900;line-height:1.3}
-.m-plot{font-size:.76rem;color:var(--text2);line-height:1.7;margin-top:8px}
-.m-rows{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:10px}
-.m-row{font-size:.7rem;display:flex;gap:6px}
+.m-t{font-size:1.15rem;font-weight:900;line-height:1.35;color:var(--text)}
+.m-plot{font-size:.8rem;color:var(--text2);line-height:1.75;margin-top:10px}
+.m-rows{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin-top:12px}
+.m-row{font-size:.76rem;display:flex;gap:6px;line-height:1.5}
 .m-row .k{color:var(--text3);font-weight:800;flex-shrink:0}
-.m-row .v{color:var(--text2)}
-.m-acts{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 4px}
-.m-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:9px;font-size:.72rem;font-weight:800;color:#fff;text-decoration:none;cursor:pointer;border:none;background:var(--grad);transition:.2s}
-.m-btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
-.m-btn.g{background:#00b540}.m-btn.gold{background:var(--gold);color:#000}.m-btn.dim{background:var(--border);color:var(--text)}
-.m-load{display:flex;align-items:center;justify-content:center;gap:10px;padding:40px;color:var(--text2);font-size:.8rem}
-.m-sec{margin-top:16px;border-top:1px solid var(--border);padding-top:12px}
-.m-sec h4{font-size:.72rem;font-weight:800;color:var(--text3);margin-bottom:8px}
-.m-score{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:9px;background:var(--bg2);border:1px solid var(--border);font-size:.7rem;color:var(--text2)}
-.m-score b{color:var(--gold);font-size:.8rem}
+.m-row .v{color:var(--text)}
+.m-acts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+.m-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 16px;border-radius:10px;font-family:var(--font);font-size:.76rem;font-weight:800;color:#fff;text-decoration:none;cursor:pointer;border:none;background:var(--grad);transition:filter .2s,transform .15s}
+.m-btn:hover{filter:brightness(1.12)}
+.m-btn:active{transform:scale(.98)}
+.m-btn.g{background:var(--green)}.m-btn.gold{background:var(--gold);color:#000}.m-btn.dim{background:var(--bg2);border:1px solid var(--border);color:var(--text)}
+.m-load{display:flex;align-items:center;justify-content:center;gap:10px;padding:40px;color:var(--text2);font-size:.82rem}
+.m-sec{margin-top:18px;border-top:1px solid var(--border);padding-top:14px}
+.m-sec h4{font-size:.8rem;font-weight:800;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.m-score{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:6px 12px;border-radius:9px;background:var(--bg2);border:1px solid var(--border);font-size:.75rem;color:var(--text)}
+.m-score b{color:var(--gold-text);font-size:.84rem}
 /* other-sources panel */
-.m-src{display:flex;gap:6px;flex-wrap:wrap}
-.m-src a{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-size:.66rem;font-weight:700;text-decoration:none;transition:.2s}
-.m-src a:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+.m-src{display:flex;gap:8px;flex-wrap:wrap}
+.m-src a{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 14px;border-radius:9px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-size:.74rem;font-weight:700;text-decoration:none;transition:border-color .2s,color .2s}
+.m-src a:hover{border-color:var(--accent);color:var(--accent)}
 .m-src a .dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
 /* ---- معرفی (collections) ---- */
-.col-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;grid-column:1/-1}
-.col-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:.25s;display:flex;flex-direction:column}
-.col-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow),var(--glow)}
+.col-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;grid-column:1/-1}
+.col-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;display:flex;flex-direction:column}
+.col-card:hover,.col-card:focus-visible{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow)}
 .col-cover{position:relative;aspect-ratio:16/9;background:var(--bg2);overflow:hidden}
-.col-cover img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
-.col-card:hover .col-cover img{transform:scale(1.05)}
-.col-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,12,.55) 0%,transparent 45%)}
-.col-emoji{position:absolute;bottom:8px;right:10px;z-index:1;font-size:1.5rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
-.col-body{padding:12px 13px 13px;display:flex;flex-direction:column;flex:1}
-.col-t{font-size:.92rem;font-weight:800;margin-bottom:4px}
-.col-d{font-size:.68rem;color:var(--text2);line-height:1.65;flex:1}
-.col-n{display:inline-block;margin-top:10px;padding:2px 11px;border-radius:12px;background:rgba(229,9,20,.13);color:var(--accent);font-size:.65rem;font-weight:800;align-self:flex-start}
-.c-rows{display:flex;flex-direction:column;gap:8px;grid-column:1/-1}
-.c-row{display:flex;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px;align-items:center;cursor:pointer;transition:.2s}
-.c-row:hover{border-color:var(--accent);background:rgba(229,9,20,.05)}
-.c-poster{width:52px;height:78px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--card)}
+.col-cover img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.col-card:hover .col-cover img{transform:scale(1.04)}
+.col-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,12,.65) 0%,transparent 50%)}
+.col-badge{position:absolute;bottom:8px;right:10px;z-index:1;padding:4px 8px;border-radius:8px;background:rgba(10,10,12,.78);color:#fff;font-size:.7rem;font-weight:800;display:inline-flex;align-items:center;gap:4px}
+.col-body{padding:13px 14px 14px;display:flex;flex-direction:column;flex:1}
+.col-t{font-size:.92rem;font-weight:800;margin-bottom:5px;color:var(--text)}
+.col-d{font-size:.74rem;color:var(--text2);line-height:1.65;flex:1}
+.col-n{display:inline-block;margin-top:10px;padding:3px 11px;border-radius:8px;background:rgba(229,9,20,.14);color:var(--accent);font-size:.7rem;font-weight:800;align-self:flex-start}
+.c-rows{display:flex;flex-direction:column;gap:10px;grid-column:1/-1}
+.c-row{display:flex;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px;align-items:center;cursor:pointer;transition:border-color .2s,background-color .2s}
+.c-row:hover,.c-row:focus-visible{border-color:var(--accent);background:rgba(229,9,20,.05)}
+.c-poster{width:56px;height:84px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--card)}
 .c-poster img{width:100%;height:100%;object-fit:cover}
-.c-poster .ni{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--text3)}
+.c-poster .ni{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text3)}
 .c-i,.c-info{flex:1;min-width:0}
-.c-t{font-size:.8rem;font-weight:800;margin-bottom:3px}
-.c-m{font-size:.66rem;color:var(--text3);margin-top:2px}
-.c-meta{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}
-.c-plot{font-size:.62rem;color:var(--text2);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}
-.c-dlcount{font-size:.58rem;color:var(--blue);font-weight:700;margin-top:4px}
-.c-dl{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:8px;background:#00b540;color:#fff;font-size:.66rem;font-weight:800;border:none;cursor:pointer;flex-shrink:0}
-.c-dl:hover{filter:brightness(1.15)}
+.c-t{font-size:.86rem;font-weight:800;margin-bottom:4px;color:var(--text)}
+.c-m{font-size:.7rem;color:var(--text3);margin-top:2px}
+.c-meta{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px}
+.c-plot{font-size:.7rem;color:var(--text2);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}
+.c-dlcount{font-size:.68rem;color:var(--blue);font-weight:700;margin-top:5px}
+.c-dl{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:8px 14px;border-radius:8px;background:var(--green);color:#fff;font-size:.72rem;font-weight:800;border:none;cursor:pointer;flex-shrink:0}
+.c-dl:hover{filter:brightness(1.12)}
 #grid > .col-grid,#grid > .c-rows,#grid > .cb-row{grid-column:1/-1}
-.cb-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;grid-column:1/-1}
+.cb-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;grid-column:1/-1}
 /* local per-section search */
-.lsearch{display:flex;align-items:center;gap:6px;margin-bottom:12px;max-width:420px}
-.lsearch input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text);font:inherit;font-size:.78rem;padding:8px 14px;outline:none;transition:.25s;min-width:0}
+.lsearch{display:flex;align-items:center;gap:8px;margin-bottom:14px;max-width:420px}
+.lsearch input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:22px;color:var(--text);font:inherit;font-size:.82rem;min-height:44px;padding:8px 16px;outline:none;transition:border-color .2s,box-shadow .2s;min-width:0}
 .lsearch input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(229,9,20,.14)}
-.lsearch button{background:var(--bg2);border:1px solid var(--border);border-radius:50%;width:30px;height:30px;color:var(--text2);cursor:pointer;font-size:.8rem;flex-shrink:0;transition:.2s}
+.lsearch button{background:var(--bg2);border:1px solid var(--border);border-radius:50%;width:44px;height:44px;color:var(--text2);cursor:pointer;font-size:.85rem;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
 .lsearch button:hover{color:var(--accent);border-color:var(--accent)}
-.sb .clr-show{display:inline-block}
-/* Install banner */
-.update-banner{position:fixed;top:14px;left:14px;right:14px;z-index:9998;max-width:560px;margin:0 auto;background:linear-gradient(135deg,#12241a 0%,#0d1a12 100%);border:1px solid rgba(70,211,105,.55);border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:12px;transform:translateY(-140%);opacity:0;transition:transform .45s cubic-bezier(.2,.9,.3,1.2),opacity .3s ease;box-shadow:var(--shadow)}
-.update-banner.show{transform:translateY(0);opacity:1}
-.update-banner .ub-icon{font-size:1.7rem;flex-shrink:0}
+.sb .clr-show{display:inline-flex}
+/* Install & Update banners */
+.update-banner{position:fixed;top:14px;left:14px;right:14px;z-index:9998;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--green);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;transform:translateY(-150%);opacity:0;pointer-events:none;transition:transform .35s ease,opacity .25s ease;box-shadow:var(--shadow)}
+.update-banner.show{transform:translateY(0);opacity:1;pointer-events:auto}
+.update-banner .ub-icon{color:var(--green);flex-shrink:0;display:flex}
 .update-banner .ub-text{flex:1;min-width:0}
-.update-banner .ub-title{font-size:.88rem;font-weight:800;color:#fff}
-.update-banner .ub-desc{font-size:.7rem;color:rgba(255,255,255,.65);margin-top:3px;line-height:1.6}
+.update-banner .ub-title{font-size:.88rem;font-weight:800;color:var(--text)}
+.update-banner .ub-desc{font-size:.74rem;color:var(--text2);margin-top:3px;line-height:1.6}
 .update-banner .ub-btns{display:flex;gap:8px;flex-shrink:0}
-.update-banner .ub-btn{padding:9px 16px;border:none;border-radius:10px;font-family:var(--font);font-size:.75rem;font-weight:800;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
-.update-banner .ub-apply{background:linear-gradient(135deg,#46d369,#2ea84f);color:#0d0d0d;box-shadow:0 4px 14px rgba(70,211,105,.35)}
-.update-banner .ub-apply:hover{filter:brightness(1.15);transform:translateY(-1px)}
-.update-banner .ub-close{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)}
-.update-banner .ub-close:hover{background:rgba(255,255,255,.16);color:#fff}
-.ios-help{position:fixed;inset:0;z-index:10000;background:rgba(5,5,10,.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.update-banner .ub-btn{min-height:44px;padding:8px 16px;border:none;border-radius:10px;font-family:var(--font);font-size:.76rem;font-weight:800;cursor:pointer;transition:filter .2s;display:inline-flex;align-items:center;gap:6px}
+.update-banner .ub-apply{background:var(--green);color:#fff}
+.update-banner .ub-apply:hover{filter:brightness(1.12)}
+.update-banner .ub-close{background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
+.update-banner .ub-close:hover{color:var(--text);border-color:var(--text3)}
+.ios-help{position:fixed;inset:0;z-index:10000;background:rgba(5,5,10,.84);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s ease}
 .ios-help.show{opacity:1;pointer-events:auto}
-.ios-help-box{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px 24px;max-width:340px;width:100%;text-align:center;box-shadow:var(--shadow);animation:mfade .25s ease}
-.ios-help-ic{font-size:2.6rem;margin-bottom:10px}
-.ios-help-title{font-size:1.05rem;font-weight:900;color:#fff;margin-bottom:16px}
+.ios-help-box{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;max-width:360px;width:100%;text-align:center;box-shadow:var(--shadow)}
+.ios-help-ic{color:var(--accent);margin-bottom:10px;display:flex;justify-content:center}
+.ios-help-title{font-size:1.05rem;font-weight:900;color:var(--text);margin-bottom:16px}
 .ios-help-steps{text-align:right;margin-bottom:18px}
-.ios-help-step{font-size:.82rem;color:var(--text2);line-height:2;padding:6px 10px;background:rgba(255,255,255,.04);border-radius:10px;margin-bottom:8px}
+.ios-help-step{font-size:.82rem;color:var(--text2);line-height:1.9;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px}
 .ios-help-step b{color:var(--text)}
-.install-banner{position:fixed;bottom:14px;left:14px;right:14px;z-index:9999;max-width:560px;margin:0 auto;background:linear-gradient(135deg,#1c1c36 0%,#141428 100%);border:1px solid rgba(229,9,20,.45);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;transform:translateY(140%);opacity:0;transition:transform .45s cubic-bezier(.2,.9,.3,1.2),opacity .3s ease;box-shadow:var(--shadow),0 0 0 1px rgba(255,255,255,.03) inset}
-.install-banner.show{transform:translateY(0);opacity:1}
-.install-banner .ib-icon{width:52px;height:52px;border-radius:13px;flex-shrink:0;object-fit:cover;box-shadow:0 4px 14px rgba(229,9,20,.35)}
+.install-banner{position:fixed;bottom:14px;left:14px;right:14px;z-index:9998;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;transform:translateY(150%);opacity:0;pointer-events:none;transition:transform .35s ease,opacity .25s ease;box-shadow:var(--shadow)}
+.install-banner.show{transform:translateY(0);opacity:1;pointer-events:auto}
+.install-banner .ib-icon{width:52px;height:52px;border-radius:13px;flex-shrink:0;object-fit:cover}
 .install-banner .ib-text{flex:1;min-width:0}
-.install-banner .ib-title{font-size:.88rem;font-weight:800;color:#fff}
-.install-banner .ib-desc{font-size:.7rem;color:rgba(255,255,255,.65);margin-top:3px;line-height:1.6}
-.install-banner .ib-desc b{color:#f5c518}
+.install-banner .ib-title{font-size:.88rem;font-weight:800;color:var(--text)}
+.install-banner .ib-desc{font-size:.74rem;color:var(--text2);margin-top:3px;line-height:1.6}
+.install-banner .ib-desc b{color:var(--gold-text)}
 .install-banner .ib-btns{display:flex;gap:8px;flex-shrink:0}
-.install-banner .ib-btn{padding:9px 18px;border:none;border-radius:10px;font-family:var(--font);font-size:.75rem;font-weight:800;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
-.install-banner .ib-install{background:linear-gradient(135deg,#e50914,#b20710);color:#fff;box-shadow:0 4px 14px rgba(229,9,20,.4)}
-.install-banner .ib-install:hover{filter:brightness(1.2);transform:translateY(-1px)}
-.install-banner .ib-close{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)}
-.install-banner .ib-close:hover{background:rgba(255,255,255,.16);color:#fff}
+.install-banner .ib-btn{min-height:44px;padding:8px 18px;border:none;border-radius:10px;font-family:var(--font);font-size:.76rem;font-weight:800;cursor:pointer;transition:filter .2s;display:inline-flex;align-items:center;gap:6px}
+.install-banner .ib-install{background:var(--grad);color:#fff}
+.install-banner .ib-install:hover{filter:brightness(1.15)}
+.install-banner .ib-close{background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
+.install-banner .ib-close:hover{color:var(--text);border-color:var(--text3)}
+footer.site-ftr{border-top:1px solid var(--border);padding:18px 16px;text-align:center;font-size:.74rem;color:var(--text2);margin-top:32px;background:var(--bg2)}
+footer.site-ftr a{color:var(--accent);text-decoration:none;font-weight:700}
+footer.site-ftr a:hover{text-decoration:underline}
 @media(max-width:768px){
-  nav{padding:9px 12px;gap:8px}.logo{font-size:.95rem}
-  .grid{grid-template-columns:repeat(auto-fill,minmax(126px,1fr));gap:9px}
-  .col-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-  .card-info{padding:8px 9px 9px}
-  .card-title{font-size:.7rem}
-  .sb{max-width:180px}
-  .tabs{padding:10px 10px 2px;gap:5px}
-  .tab{padding:7px 12px;font-size:.72rem}
+  header.site-hdr{padding:8px 12px;gap:8px;flex-wrap:wrap}.logo{font-size:.98rem}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:10px}
+  .col-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+  .card-info{padding:9px 10px 10px}
+  .card-title{font-size:.76rem}
+  .sb{max-width:none;order:3;flex-basis:100%;margin-top:4px}
+  nav.tabs{padding:10px 12px 2px;gap:6px}
+  .tab{padding:8px 12px;font-size:.76rem;flex:1;justify-content:center}
   .m-rows{grid-template-columns:1fr}
+  .m-head.with-bd{margin:-36px 10px 10px}
 }
 @media(max-width:480px){.update-banner{flex-wrap:wrap;gap:10px}.update-banner .ub-btns{width:100%;justify-content:flex-end}.install-banner{flex-wrap:wrap;gap:10px}.install-banner .ib-btns{width:100%;justify-content:flex-end}}
-
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
 </style>
 </head>
 <body>
-<nav>
-  <div class="logo">🎬 دنیای فیلم</div>
+<header class="site-hdr">
+  <h1 class="logo">
+    <svg class="ic-svg" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="2.5"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+    <span>دنیای فیلم و سریال</span>
+  </h1>
   <div class="nr">
-    <div class="sb"><input type="text" id="si" placeholder="جستجو در همه بخش‌ها..."><button id="sclr" title="پاک کردن" style="display:none">✕</button><button id="sbtn">🔍</button></div>
-    <button class="ib" id="thB">🌙</button>
-    <button class="ib" id="hdrInstall" title="نصب برنامه">⬇</button>
-  </div>
-</nav>
-<div class="tabs">
-  <button class="tab active" data-t="movies">🎬 فیلم‌ها</button>
-  <button class="tab" data-t="series">📺 سریال‌ها</button>
-  <button class="tab" data-t="sermovie">🎬 سرمووی</button>
-  <button class="tab" data-t="intro">⭐ معرفی</button>
-</div>
-<div class="main">
-  <div class="load-box" id="loadBox">
-    <div class="icon">🎬</div>
-    <p id="loadText">در حال بارگذاری آرشیو...</p>
-    <div class="sp" id="loadSpinner"></div>
-    <div style="display:none;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px" id="loadManual">
-      <button class="btn btn-p" id="fileBtn">📁 انتخاب فایل آرشیو</button>
-      <button class="btn btn-g" id="fetchBtn">🔄 دریافت از سرور</button>
+    <div class="sb" role="search">
+      <label for="si" class="sr-only">جستجو در همه بخش‌ها</label>
+      <input type="search" id="si" placeholder="جستجو در همه بخش‌ها (نام، سال، کد IMDb)...">
+      <button type="button" id="sclr" title="پاک کردن جستجو" aria-label="پاک کردن جستجو" style="display:none">
+        <svg class="ic-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <button type="button" id="sbtn" title="جستجو" aria-label="اجرای جستجو">
+        <svg class="ic-svg" width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
     </div>
+    <button type="button" class="ib" id="thB" title="تغییر پوسته تاریک و روشن" aria-label="تغییر پوسته تاریک و روشن"></button>
+    <button type="button" class="ib" id="hdrInstall" title="نصب اپلیکیشن سینما" aria-label="نصب اپلیکیشن سینما">
+      <svg class="ic-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
+  </div>
+</header>
+<nav class="tabs" aria-label="بخش‌های برنامه">
+  <button type="button" class="tab active" data-t="movies" aria-current="page">
+    <svg class="ic-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="2.5"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+    <span>فیلم‌ها</span>
+  </button>
+  <button type="button" class="tab" data-t="series">
+    <svg class="ic-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+    <span>سریال‌ها</span>
+  </button>
+  <button type="button" class="tab" data-t="sermovie">
+    <svg class="ic-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+    <span>سرمووی</span>
+  </button>
+  <button type="button" class="tab" data-t="intro">
+    <svg class="ic-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <span>معرفی</span>
+  </button>
+</nav>
+<main class="main" id="mainContent">
+  <div class="load-box" id="loadBox" role="status" aria-live="polite">
+    <div class="icon">
+      <svg class="ic-svg" width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="2.5"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+    </div>
+    <p id="loadText">در حال بارگذاری آرشیو...</p>
+    <div class="sp" id="loadSpinner" aria-hidden="true"></div>
+    <div style="display:none;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px" id="loadManual">
+      <button type="button" class="btn btn-p" id="fileBtn">انتخاب فایل آرشیو</button>
+      <button type="button" class="btn btn-g" id="fetchBtn">دریافت از سرور</button>
+    </div>
+    <label for="fileInput" class="sr-only">بارگذاری فایل آرشیو</label>
     <input type="file" id="fileInput" accept=".html,.htm,.txt" multiple style="display:none">
   </div>
-  <div class="prog" id="prog" style="display:none"><div class="prog-bar"><div class="prog-fill" id="progFill"></div></div><div class="prog-text" id="progText">...</div></div>
-  <div id="resSection" style="display:none">
-    <div class="results-info"><div><span class="results-count" id="resCount">0</span> نتیجه</div><div class="filters" id="filterBar"></div></div>
-    <div class="lsearch" id="lsearchBox"><input type="text" id="lsi" placeholder="جستجو در این بخش..."><button id="lclr" title="پاک کردن">✕</button></div>
+  <div class="prog" id="prog" style="display:none" role="status" aria-live="polite"><div class="prog-bar"><div class="prog-fill" id="progFill"></div></div><div class="prog-text" id="progText">...</div></div>
+  <section id="resSection" style="display:none" aria-label="فهرست عناوین">
+    <div class="results-info"><div><span class="results-count" id="resCount">0</span> نتیجه</div><div class="filters" id="filterBar" role="toolbar" aria-label="مرتب‌سازی و فیلتر کیفیت"></div></div>
+    <div class="lsearch" id="lsearchBox">
+      <label for="lsi" class="sr-only">جستجو در این بخش</label>
+      <input type="search" id="lsi" placeholder="جستجو در این بخش...">
+      <button type="button" id="lclr" title="پاک کردن جستجوی بخش" aria-label="پاک کردن جستجوی بخش" style="display:none">
+        <svg class="ic-svg" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
     <div class="grid" id="grid"></div>
-    <div class="pg" id="pg"></div>
-  </div>
-</div>
-<div class="modal-ov" id="modalOv" hidden>
+    <nav class="pg" id="pg" aria-label="صفحه‌بندی نتایج"></nav>
+  </section>
+</main>
+<footer class="site-ftr">
+  <span>سینما: آرشیو متن‌باز فیلم و سریال فارسی با همکاری <a href="https://mohsen-niksirat.github.io/CineScore/" target="_blank" rel="noopener">CineScore</a></span>
+</footer>
+<div class="modal-ov" id="modalOv" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
   <div class="modal">
     <div class="modal-h">
-      <span class="modal-t" id="mTitle"></span>
-      <button class="modal-x" id="mClose" title="بستن">✕</button>
+      <h2 class="modal-t" id="mTitle"></h2>
+      <button type="button" class="modal-x" id="mClose" title="بستن" aria-label="بستن پنجره جزئیات">
+        <svg class="ic-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
     <div class="modal-b" id="mBody"></div>
   </div>
 </div>
-<div class="tc" id="tc"></div>
-<!-- ═══════════ دیالوگ: با چی دانلود بشه؟ ═══════════ -->
-<div class="modal-ov" id="dlOv" hidden>
-  <div class="modal" style="width:min(430px,95vw)">
+<div class="tc" id="tc" role="status" aria-live="polite"></div>
+<!-- دیالوگ: با چی دانلود بشه؟ -->
+<div class="modal-ov" id="dlOv" role="dialog" aria-modal="true" aria-labelledby="dlTitle" hidden>
+  <div class="modal" style="width:min(440px,95vw)">
     <div class="modal-h">
-      <span class="modal-t">⬇ با چی دانلود بشه؟</span>
-      <button class="modal-x" id="dlClose" title="بستن">✕</button>
+      <h2 class="modal-t" id="dlTitle">انتخاب روش دانلود</h2>
+      <button type="button" class="modal-x" id="dlClose" title="بستن" aria-label="بستن پنجره دانلود">
+        <svg class="ic-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
-    <div class="modal-b" style="padding:10px 12px">
-      <div id="dlTargetName" style="font-size:.7rem;color:var(--text2);margin-bottom:10px;word-break:break-all;direction:ltr;text-align:left"></div>
+    <div class="modal-b" style="padding:12px 14px">
+      <div id="dlTargetName" style="font-size:.74rem;color:var(--text2);margin-bottom:10px;word-break:break-all;direction:ltr;text-align:left"></div>
       <div id="dlOptions"></div>
-      <div style="font-size:.6rem;color:var(--text3);margin-top:10px;line-height:1.8;border-top:1px solid var(--border);padding-top:8px">
-        💡 دانلودمنیجرها با نصب، خودشان به مرورگر اضافه می‌شوند. اگر باز نشد، لینک را کپی کنید و داخل برنامه ON را بزنید.
+      <div style="font-size:.68rem;color:var(--text2);margin-top:10px;line-height:1.8;border-top:1px solid var(--border);padding-top:8px">
+        دانلودمنیجرها پس از نصب، خودشان به مرورگر اضافه می‌شوند. اگر برنامه باز نشد، گزینه کپی لینک را بزنید و داخل برنامه جای‌گذاری کنید.
       </div>
     </div>
   </div>
@@ -318,8 +387,36 @@ const ARCHIVE={"m":[{"t":"The Shawshank Redemption","i":"tt0111161","r":"9.3","v
 
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-// Rating sanity: some upstream feeds swap votes/rating (e.g. "1700.0" as a rate)
+// Rating & Year sanity: some upstream feeds swap votes/rating or parse 4-digit movie titles (e.g. "2073") as release year
 function saneRating(r){var n=parseFloat(r);return isFinite(n)&&n>0&&n<=10?r:'';}
+function saneYear(y){var n=parseInt(y,10);return isFinite(n)&&n>=1888&&n<=2027?String(n):'';}
+
+// Clean inline SVG icon dictionary (replaces all UI emojis)
+var IC={
+  star:'<svg class="ic-svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  vote:'<svg class="ic-svg" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>',
+  tv:'<svg class="ic-svg" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>',
+  film:'<svg class="ic-svg" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="2.5"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>',
+  anime:'<svg class="ic-svg" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  chart:'<svg class="ic-svg" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+  dl:'<svg class="ic-svg" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  copy:'<svg class="ic-svg" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  folder:'<svg class="ic-svg" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  folderOpen:'<svg class="ic-svg" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 19a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H2v11z"/><path d="M22 6a2 2 0 0 0-2-2h-9L9 2H4a2 2 0 0 0-2 2v2h20V6z"/></svg>',
+  disc:'<svg class="ic-svg" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>',
+  globe:'<svg class="ic-svg" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+  zap:'<svg class="ic-svg" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  box:'<svg class="ic-svg" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
+  ext:'<svg class="ic-svg" width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
+  cal:'<svg class="ic-svg" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  sort:'<svg class="ic-svg" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="6" x2="16" y2="6"/><line x1="4" y1="12" x2="13" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/></svg>',
+  sparkle:'<svg class="ic-svg" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"/></svg>',
+  moon:'<svg class="ic-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  sun:'<svg class="ic-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+  empty:'<svg class="ic-svg" width="36" height="36" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  refresh:'<svg class="ic-svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>'
+};
+
 // Toast notification
 function toast(msg,type){
   var tc=document.getElementById('tc');
@@ -331,7 +428,7 @@ function toast(msg,type){
   setTimeout(function(){d.remove()},3000);
 }
 
-// Enrichment cache — data comes from the CineScore dataset (CSMAP)
+// Enrichment cache: data comes from the CineScore dataset (CSMAP)
 function csToInfo(x){
   if(!x)return null;
   return {poster:x.p||'',backdrop:x.b||'',rating:x.r,votes:x.v,title:x.t,year:x.y,
@@ -357,8 +454,8 @@ function parseHTML(html,type){
     var title=titleMatch[1].trim();
     var imdbMatch=block.match(/tt\d{5,}/);
     var imdbId=imdbMatch?imdbMatch[0]:'';
-    var ratingMatch=block.match(/⭐\s*([\d.]+)/);
-    var rating=ratingMatch?ratingMatch[1]:'';
+    var ratingMatch=block.match(/([\d.]+)\s*\/?\s*10|IMDb[^\d]*([\d.]+)/i);
+    var rating=ratingMatch?(ratingMatch[1]||ratingMatch[2]):'';
     var yearMatch=block.match(/(\d{4})/);
     var year=yearMatch?yearMatch[1]:'';
     var links=[];
@@ -377,41 +474,37 @@ function parseHTML(html,type){
   return items;
 }
 
-// Crawl for new content in background
-async function crawlForNew(){}
-
-
-
 let DATA={movies:[],series:[],sermovie:[]};
 let tab='movies',query='',filter='all',sortBy='rating',page=0,PP=30,oc={};
 var CUR_TITLE='';
+var lastFocusedEl=null;
 
 function subLabel(s){
   s=String(s||'');
-  if(/dubbed/i.test(s))return'🔴 دوبله';
-  if(/hardsub/i.test(s))return'🟠 زیرنویس چسبیده';
-  if(/nosub/i.test(s))return'⚪ بدون زیرنویس';
-  return'🔵 زیرنویس';
+  if(/dubbed/i.test(s))return'دوبله فارسی';
+  if(/hardsub/i.test(s))return'زیرنویس چسبیده';
+  if(/nosub/i.test(s))return'بدون زیرنویس';
+  return'زیرنویس فارسی';
 }
-/* پلیر آنلاین CinePlay — باز شدن در تب جدید */
+/* پلیر آنلاین CinePlay: باز شدن در تب جدید */
 var CINEPLAY_URL='https://mohsen-niksirat.github.io/CinePlay/';
 function cinePlayLink(u,title){
   var p='?src='+encodeURIComponent(u);
   if(title)p+='&title='+encodeURIComponent(title);
   return CINEPLAY_URL+p;
 }
-/* ═══════ دیالوگ انتخاب دانلودمنیجر ═══════ */
+/* دیالوگ انتخاب دانلودمنیجر */
 var DL_LAST_KEY='cinemaDlLast';
 function dlManagers(){
   return [
-    {id:'browser',ic:'🌐',n:'مرورگر',sub:'دانلود داخلی مرورگر (Chrome/Firefox/…)',act:function(u){var a=document.createElement('a');a.href=u;a.setAttribute('download','');document.body.appendChild(a);a.click();a.remove();}},
-    {id:'idm',ic:'⚡',n:'Internet Download Manager',sub:'IDM — پرسرعت‌ترین',act:function(u){location.href='idm://a?url='+encodeURIComponent(u);toast('اگر IDM باز نشد، لینک را کپی کنید','e');}},
-    {id:'fdm',ic:'🚀',n:'Free Download Manager',sub:'FDM — رایگان و متن‌باز',act:function(u){location.href='fdm://download?url='+encodeURIComponent(u);toast('اگر FDM باز نشد، لینک را کپی کنید','e');}},
-    {id:'xdm',ic:'📦',n:'Xtreme Download Manager',sub:'XDM',act:function(u){location.href='xdm://'+encodeURIComponent(u);toast('اگر XDM باز نشد، لینک را کپی کنید','e');}},
-    {id:'mipony',ic:'🐴',n:'Mipony',sub:'دانلودمنیجر تخصصی',act:function(u){location.href='mipony://'+encodeURIComponent(u);toast('اگر باز نشد، لینک را کپی کنید','e');}},
-    {id:'jdownloader',ic:'☕',n:'JDownloader',sub:'جاوا — چندپلتفرمی',act:function(u){toast('در JDownloader: Link → Add Links سپس Paste','s');copyText(u);}},
-    {id:'copy',ic:'⧉',n:'کپی لینک',sub:'برای هر برنامه دیگری — Paste در دانلودمنیجر',act:function(u){copyText(u);toast('لینک کپی شد','s');}},
-    {id:'torrent',ic:'🧲',n:'دانلود با برنامه دیگر…',sub:'لینک را در تب جدید باز کن (راست‌کلیک → Copy link)',act:function(u){window.open(u,'_blank','noopener');}}
+    {id:'browser',ic:IC.globe,n:'مرورگر',sub:'دانلود مستقیم داخل مرورگر (Chrome / Firefox / Safari)',act:function(u){var a=document.createElement('a');a.href=u;a.setAttribute('download','');document.body.appendChild(a);a.click();a.remove();}},
+    {id:'idm',ic:IC.zap,n:'Internet Download Manager',sub:'IDM (پیشنهادی برای ویندوز)',act:function(u){location.href='idm://a?url='+encodeURIComponent(u);toast('اگر IDM باز نشد، لینک را کپی کنید','e');}},
+    {id:'fdm',ic:IC.dl,n:'Free Download Manager',sub:'FDM (رایگان و متن‌باز)',act:function(u){location.href='fdm://download?url='+encodeURIComponent(u);toast('اگر FDM باز نشد، لینک را کپی کنید','e');}},
+    {id:'xdm',ic:IC.box,n:'Xtreme Download Manager',sub:'XDM',act:function(u){location.href='xdm://'+encodeURIComponent(u);toast('اگر XDM باز نشد، لینک را کپی کنید','e');}},
+    {id:'mipony',ic:IC.box,n:'Mipony',sub:'دانلودمنیجر تخصصی',act:function(u){location.href='mipony://'+encodeURIComponent(u);toast('اگر باز نشد، لینک را کپی کنید','e');}},
+    {id:'jdownloader',ic:IC.box,n:'JDownloader',sub:'چندپلتفرمی (کپی خودکار در کلیپ‌بورد)',act:function(u){toast('در JDownloader: Link -> Add Links سپس Paste','s');copyText(u);}},
+    {id:'copy',ic:IC.copy,n:'کپی لینک مستقیم',sub:'برای جای‌گذاری دستی در هر برنامه دانلود',act:function(u){copyText(u);toast('لینک کپی شد','s');}},
+    {id:'torrent',ic:IC.ext,n:'باز کردن در تب جدید',sub:'نمایش مستقیم لینک در تب جدید مرورگر',act:function(u){window.open(u,'_blank','noopener');}}
   ];
 }
 function copyText(t){
@@ -421,46 +514,55 @@ function copyText(t){
   }
 }
 function showDlDialog(u,title){
+  lastFocusedEl=document.activeElement;
   var ov=document.getElementById('dlOv');
   var name=decodeURIComponent(String(u).split('/').pop()||'');
-  document.getElementById('dlTargetName').textContent=(title?title+' — ':'')+name;
+  var cleanTitle=title||'';
+  document.getElementById('dlTargetName').textContent=(cleanTitle?cleanTitle+' : ':'')+name;
   var last=localStorage.getItem(DL_LAST_KEY)||'browser';
   var mans=dlManagers();
   /* گزینه آخر انتخاب‌شده اول لیست */
   mans.sort(function(a,b){return (a.id===last?-1:1)-(b.id===last?-1:1);});
-  document.getElementById('dlOptions').innerHTML=mans.map(function(m,i){
+  document.getElementById('dlOptions').innerHTML=mans.map(function(m){
     return '<a class="dl-opt'+(m.id==='copy'?' dl-copy':'')+'" data-mid="'+m.id+'" data-u="'+esc(u)+'" href="#" onclick="return dlPick(this)">'+
       '<span class="ic">'+m.ic+'</span><span style="flex:1"><div>'+m.n+'</div><div class="sub">'+m.sub+'</div></span>'+
-      (m.id===last?'<span style="color:var(--green);font-size:.6rem">آخرین ✓</span>':'')+
+      (m.id===last?'<span style="color:var(--green);font-size:.66rem;font-weight:700">آخرین انتخاب</span>':'')+
     '</a>';
   }).join('');
   ov.hidden=false;
+  var closeBtn=document.getElementById('dlClose');
+  if(closeBtn)closeBtn.focus();
+}
+function closeDlDialog(){
+  var ov=document.getElementById('dlOv');
+  if(ov&&!ov.hidden){
+    ov.hidden=true;
+    if(lastFocusedEl&&typeof lastFocusedEl.focus==='function')lastFocusedEl.focus();
+  }
 }
 function dlPick(el){
   var mid=el.getAttribute('data-mid'),u=el.getAttribute('data-u');
   var m=dlManagers().filter(function(x){return x.id===mid;})[0];
-  document.getElementById('dlOv').hidden=true;
+  closeDlDialog();
   if(!m)return false;
   try{localStorage.setItem(DL_LAST_KEY,mid);}catch(e){}
   if(m)m.act(u);
   return false;
 }
-document.getElementById('dlClose').addEventListener('click',function(){document.getElementById('dlOv').hidden=true;});
-document.getElementById('dlOv').addEventListener('click',function(e){if(e.target.id==='dlOv')this.hidden=true;});
-/* هرEsc ببند */
-document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('dlOv').hidden=true;});
+document.getElementById('dlClose').addEventListener('click',closeDlDialog);
+document.getElementById('dlOv').addEventListener('click',function(e){if(e.target.id==='dlOv')closeDlDialog();});
 
-/* نسخه‌های قابل‌سوییچ برای پلیر — همه لینک‌های مستقیم همین عنوان */
+/* نسخه‌های قابل‌سوییچ برای پلیر: همه لینک‌های مستقیم همین عنوان */
 var CUR_VERSIONS=[];
 function buildVersionsForPlayer(item){
   var vs={};
   function add(u,q,k){
     if(!u||isFolderUrl(u))return;
     var label=q||'';
-    if(k==='Dubbed')label='🔴 دوبله — '+label;
-    else if(k==='HardSub')label='🟠 زیرنویس چسبیده — '+label;
-    else if(k==='NoSub')label='⚪ بدون زیرنویس — '+label;
-    else label='🔵 زیرنویس‌دار — '+label;
+    if(k==='Dubbed')label='دوبله فارسی ('+label+')';
+    else if(k==='HardSub')label='زیرنویس چسبیده ('+label+')';
+    else if(k==='NoSub')label='بدون زیرنویس ('+label+')';
+    else label='زیرنویس‌دار ('+label+')';
     vs[u]={name:label,src:u};
   }
   if(item.seasons&&item.seasons.length){
@@ -487,25 +589,25 @@ function playLinkFor(u,title){
   if(CUR_VERSIONS.length>1)p+='&vers='+encodeURIComponent(JSON.stringify(CUR_VERSIONS));
   return CINEPLAY_URL+p;
 }
-/* آیکون پخش آنلاین — SVG قشنگ */
+/* آیکون پخش آنلاین با SVG */
 function playBtnHTML(u,title){
   return '<a class="cp play-btn" href="'+esc(playLinkFor(u,title))+'" target="_blank" rel="noopener" title="پخش آنلاین با سینما پلی">'+
-    '<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.04 1.04 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14z"/></svg> پخش</a>';
+    '<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.04 1.04 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14z"/></svg> پخش</a>';
 }
-/* پخش پوشه فصل — اول اپیزودها را می‌گیرد بعد همه را به CinePlay پاس می‌دهد */
+/* پخش پوشه فصل: ابتدا اپیزودها را می‌گیرد سپس همه را به CinePlay می‌فرستد */
 function playSeasonHTML(folderUrl,title){
-  return '<a class="cp play-btn" href="#" onclick="return playSeason(this,\''+encodeURIComponent(folderUrl)+'\',\''+encodeURIComponent(title||'')+'\')" title="پخش آنلاین فصل — ابتدا اپیزودها دریافت می‌شود">'+
-    '<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.04 1.04 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14z"/></svg> پخش فصل</a>';
+  return '<a class="cp play-btn" href="#" onclick="return playSeason(this,\''+encodeURIComponent(folderUrl)+'\',\''+encodeURIComponent(title||'')+'\')" title="پخش آنلاین فصل (ابتدا اپیزودها دریافت می‌شود)">'+
+    '<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.04 1.04 0 0 0 0-1.76L9.56 4.26A1.04 1.04 0 0 0 8 5.14z"/></svg> پخش فصل</a>';
 }
 window.playSeason=async function(a,encFolder,encTitle){
   var folder=decodeURIComponent(encFolder),title=decodeURIComponent(encTitle);
   var orig=a.innerHTML;
-  a.innerHTML='⏳…';
+  a.innerHTML='در حال دریافت...';
   try{
     var files=window.FOLDER_CACHE[folder];
     if(!files||!files.length){files=await fetchFolderListing(folder);window.FOLDER_CACHE[folder]=files;}
     a.innerHTML=orig;
-    if(!files||!files.length||files.empty){toast('اپیزودها در دسترس نیست — سرور از این اتصال پاسخ نمی‌دهد','e');return false;}
+    if(!files||!files.length||files.empty){toast('اپیزودها در دسترس نیست (سرور از این اتصال پاسخ نمی‌دهد)','e');return false;}
     var eps=files.map(function(f){return {src:f.u,name:f.q||f.u.split('/').pop()}});
     var p=new URLSearchParams();
     p.set('src',eps[0].src);
@@ -516,19 +618,20 @@ window.playSeason=async function(a,encFolder,encTitle){
   return false;
 };
 function dlAnchor(u,q,size){
-  return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" onclick="showDlDialog(this.getAttribute(\'data-raw\'),\''+encodeURIComponent(CUR_TITLE||'')+'\');return false" data-raw="'+esc(u)+'" title="دانلود — انتخاب دانلودمنیجر">⬇ '+esc(q)+(size?' <span class="sz">'+esc(size)+'</span>':'')+'</a>'+
+  return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" onclick="showDlDialog(this.getAttribute(\'data-raw\'),this.getAttribute(\'data-title\'));return false" data-raw="'+esc(u)+'" data-title="'+esc(CUR_TITLE||'')+'" title="دانلود و انتخاب دانلودمنیجر">'+IC.dl+' '+esc(q)+(size?' <span class="sz">'+esc(size)+'</span>':'')+'</a>'+
     playBtnHTML(u,CUR_TITLE)+
-    '<button class="cp" data-u="'+esc(u)+'" title="کپی لینک">⧉</button></div>';
-}function isFolderUrl(u){
+    '<button type="button" class="cp" data-u="'+esc(u)+'" title="کپی لینک" aria-label="کپی لینک دانلود">'+IC.copy+'</button></div>';
+}
+function isFolderUrl(u){
   return !/\.(mkv|mp4|avi|mov|wmv|webm|m4v|rar|zip|srt)$/i.test(String(u||'').split(/[?#]/)[0]);
 }
 function dlRow(l){
   var u=l.href||l.u, q=l.qual||l.q, s=l.size||l.s;
   if(isFolderUrl(u)){
-    return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" target="_blank" rel="noopener">📁 '+esc(q)+' <span class="sz">پوشه در هاست</span></a>'+
+    return '<div class="dl-row"><a class="dl-link" href="'+esc(u)+'" target="_blank" rel="noopener">'+IC.folder+' '+esc(q)+' <span class="sz">پوشه در هاست</span></a>'+
       playSeasonHTML(u,CUR_TITLE)+
-      '<button class="cp" data-u="'+esc(u)+'" title="کپی لینک پوشه">⧉</button>'+
-      '<button class="cp" data-f="'+esc(u)+'" onclick="openFolderFiles(this,this.getAttribute(\'data-f\'))" title="نمایش فایل‌های این پوشه">📂</button></div>'+
+      '<button type="button" class="cp" data-u="'+esc(u)+'" title="کپی لینک پوشه" aria-label="کپی لینک پوشه">'+IC.copy+'</button>'+
+      '<button type="button" class="cp" data-f="'+esc(u)+'" onclick="openFolderFiles(this,this.getAttribute(\'data-f\'))" title="نمایش فایل‌های این پوشه" aria-label="نمایش فایل‌های این پوشه">'+IC.folderOpen+'</button></div>'+
       '<div class="fx-files" style="display:none"></div>';
   }
   return dlAnchor(u,q,s);
@@ -587,16 +690,16 @@ window.openFolderFiles=async function(btn,url){
   if(!holder||!holder.classList.contains('fx-files'))return false;
   if(holder.dataset.open==='1'&&holder.dataset.loaded==='1'){holder.style.display='none';holder.dataset.open='0';return true;}
   if(holder.dataset.loaded!=='1'){
-    btn.textContent='⏳';
+    btn.innerHTML='...';
     var res=window.FOLDER_CACHE[url];
     if(!res){res=await fetchFolderListing(url);window.FOLDER_CACHE[url]=res;}
-    btn.textContent='📂';
+    btn.innerHTML=IC.folderOpen;
     if(res&&res.empty){
       holder.innerHTML=res.type==='ir'
-        ?'<div class="fx-err">🇮🇷 این سرور فقط با آی‌پی ایران پاسخ می‌دهد و از این اتصال قابل خواندن نیست. از دکمه ⧉ لینک پوشه را کپی کنید یا در تب جدید باز کنید.</div>'
-        :'<div class="fx-err">⚠️ فایل‌های این پوشه در دسترس نیست (سرور پاسخ نداد). از دکمه ⧉ لینک پوشه را کپی کنید یا در تب جدید باز کنید.</div>';
+        ?'<div class="fx-err">این سرور فقط با آی‌پی ایران پاسخ می‌دهد و از این اتصال قابل خواندن نیست. از دکمه کپی، لینک پوشه را کپی کنید یا در تب جدید باز کنید.</div>'
+        :'<div class="fx-err">فایل‌های این پوشه در دسترس نیست (سرور پاسخ نداد). از دکمه کپی، لینک پوشه را کپی کنید یا در تب جدید باز کنید.</div>';
     }else{
-      holder.innerHTML=res.length?res.map(function(f){return dlAnchor(f.u,f.q,f.s)}).join(''):'<div class="fx-err">⚠️ فایلی پیدا نشد — از دکمه پوشه در هاست استفاده کنید.</div>';
+      holder.innerHTML=res.length?res.map(function(f){return dlAnchor(f.u,f.q,f.s)}).join(''):'<div class="fx-err">فایلی پیدا نشد. از لینک پوشه در هاست استفاده کنید.</div>';
       bindCp(holder);
     }
     holder.dataset.loaded='1';
@@ -619,7 +722,7 @@ window.copySectionLinks=async function(btn){
     btn.disabled=true;
     var i=0;
     for(var f of fl){
-      btn.textContent='⏳ '+i+'/'+fl.length+' پوشه...';
+      btn.innerHTML='در حال بررسی '+i+'/'+fl.length+' پوشه...';
       var files=window.FOLDER_CACHE[f];
       if(!files){files=await fetchFolderListing(f);window.FOLDER_CACHE[f]=files;}
       if(files&&!files.empty)files.forEach(function(x){all.push(x.u)});
@@ -628,13 +731,13 @@ window.copySectionLinks=async function(btn){
     btn.disabled=false;
   }
   var uniq=[...new Set(all)];
-  btn.textContent='📋 کپی همه لینک‌ها (IDM)';
+  btn.innerHTML=IC.copy+' کپی همه لینک‌ها (IDM)';
   if(!uniq.length){toast('لینکی پیدا نشد','e');return;}
   var text=uniq.join('\r\n');
   try{await navigator.clipboard.writeText(text);}catch(e){
     var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e2){}ta.remove();
   }
-  toast(uniq.length+' لینک کپی شد — در IDM: Add URL → Paste','s');
+  toast(uniq.length+' لینک کپی شد (در IDM: Add URL -> Paste)','s');
 };
 function buildDLSection(item){
   var h='';
@@ -647,7 +750,7 @@ function buildDLSection(item){
       var seasons=groups[grp];
       h+='<div class="sub-h">'+subLabel(grp)+'</div>';
       seasons.forEach(function(s){
-        h+='<details style="margin-bottom:4px"><summary class="season-h">📀 فصل '+esc(s.num)+' ('+s.links.length+' کیفیت)</summary>';
+        h+='<details style="margin-bottom:4px"><summary class="season-h">'+IC.disc+' فصل '+esc(s.num)+' ('+s.links.length+' کیفیت)</summary>';
         s.links.forEach(function(l){
           h+=dlRow(l);
         });
@@ -680,13 +783,12 @@ function buildDLSection(item){
       });
     }
   }
-  return h?'<button type="button" class="copyall" onclick="copySectionLinks(this)">📋 کپی همه لینک‌ها (IDM)</button>'+h:'';
+  return h?'<button type="button" class="copyall" onclick="copySectionLinks(this)">'+IC.copy+' کپی همه لینک‌ها (IDM)</button>'+h:'';
 }
 
 function cardHTML(item,idx){
   const cs=CSMAP[item.imdbId]||{};
   const info=oc[item.imdbId]||{};
-  const poster=cs.p||info.poster||'';
   const plot=cs.pl||info.plot||'';
   let quals=[];
   if(item.seasons&&item.seasons.length){
@@ -697,51 +799,70 @@ function cardHTML(item,idx){
     quals=[...new Set((item.links||[]).map(l=>l.qual||l.q))].slice(0,4);
   }
   const qTags=quals.map(q=>{
-    const n=(q.match(/(\d+)p/)||[])[1];
+    const n=((q||'').match(/(\d+)p/)||[])[1];
     return'<span class="qt '+(n==='1080'?'q1':n==='720'?'q2':'')+'">'+esc(q)+'</span>';
   }).join('');
   const seasonCount=item.seasons?[...new Set(item.seasons.map(s=>String(s.num)))].length:0;
   const seasonInfo=seasonCount?seasonCount+' فصل':'';
   const isShow=item.type==='series'||item.type==='anime';
-  return'<div class="card" data-idx="'+idx+'" data-iid="'+esc(item.imdbId)+'" data-type="'+(isShow?'series':'movie')+'">'+
+  return'<div class="card" tabindex="0" role="button" aria-label="'+esc(item.title)+'" data-idx="'+idx+'" data-iid="'+esc(item.imdbId)+'" data-type="'+(isShow?'series':'movie')+'">'+
     '<div class="card-top">'+
-      '<div class="card-poster">'+csPosterHTML(cs.p||info.poster||'',cs.p_raw,'',isShow)+'</div>'+
-      (item.rating?'<span class="rt-f">⭐ '+item.rating+'</span>':'')+
+      '<div class="card-poster">'+csPosterHTML(cs.p||info.poster||'',cs.p_raw,item.title,isShow)+'</div>'+
+      (item.rating?'<span class="rt-f">'+IC.star+' '+esc(item.rating)+'</span>':'')+
     '</div>'+
     '<div class="card-info">'+
       '<div class="card-title">'+esc(item.title)+'</div>'+
       '<div class="card-meta">'+
-        (item.year?'<span class="cb cb-y">'+item.year+'</span>':'')+
+        (item.year?'<span class="cb cb-y">'+esc(item.year)+'</span>':'')+
         '<span class="cb cb-t">'+(item.type==='anime'?'انیمه':(isShow?'سریال':'فیلم'))+'</span>'+
-        (item.votes?'<span class="cb cb-v">🗳'+item.votes+'</span>':'')+
+        (item.votes?'<span class="cb cb-v">'+IC.vote+' '+esc(item.votes)+'</span>':'')+
       '</div>'+
-      (seasonInfo?'<div class="season-info">📺 '+seasonInfo+'</div>':'')+
+      (seasonInfo?'<div class="season-info">'+IC.tv+' '+seasonInfo+'</div>':'')+
       '<div class="card-quals">'+qTags+'</div>'+
       '<div class="card-plot">'+(plot?esc(plot.length>110?plot.slice(0,110)+'…':plot):'')+'</div>'+
-      '<button type="button" class="cs-btn" data-cs-title="'+esc(item.title)+'" data-cs-id="'+esc(item.imdbId)+'">📊 تحلیل</button>'+
+      '<button type="button" class="cs-btn" data-cs-title="'+esc(item.title)+'" data-cs-id="'+esc(item.imdbId)+'">'+IC.chart+' تحلیل</button>'+
     '</div>'+
     '<div class="card-body"><div class="card-dl">'+buildDLSection(item)+'</div></div>'+
   '</div>';
+}
+
+function bindGridInteractions(grid,list){
+  grid.querySelectorAll('.cs-btn').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();
+    openCineScore(b.dataset.csTitle,b.dataset.csId);
+  }));
+  grid.querySelectorAll('.card').forEach(c=>{
+    c.addEventListener('click',e=>{
+      if(e.target.closest('a,button,details,summary,.cs-btn,.cp'))return;
+      const it=list[parseInt(c.dataset.idx)];
+      if(it)openDetail(it);
+    });
+    c.addEventListener('keydown',e=>{
+      if(e.target!==c)return;
+      if(e.key==='Enter'||e.key===' '){
+        e.preventDefault();
+        const it=list[parseInt(c.dataset.idx)];
+        if(it)openDetail(it);
+      }
+    });
+  });
 }
 
 function render(){
   if(globalQuery){renderGlobal();return;}
   if(tab==='sermovie'){renderSermovie();return;}
   if(tab==='intro'){renderIntro();return;}
-  const items=DATA[tab];
+  const items=DATA[tab]||[];
   let filtered=items;
   if(query){
     const q=query.toLowerCase();
-    filtered=filtered.filter(i=>i.title.toLowerCase().includes(q)||i.imdbId.toLowerCase().includes(q)||(i.year||'').includes(q)||(i.rating||'').includes(q));
+    filtered=filtered.filter(i=>i.title.toLowerCase().includes(q)||(i.imdbId||'').toLowerCase().includes(q)||(i.year||'').includes(q)||(i.rating||'').includes(q));
   }
   if(filter!=='all'){
-    if(tab==='sermovie'&&(filter==='movie'||filter==='series')){
-      filtered=filtered.filter(i=>i.type===filter);
-    }else if(tab==='sermovie'&&(filter==='SoftSub'||filter==='Dubbed')){
-      filtered=filtered.filter(i=>(i.links||[]).some(l=>(l.sub||'').toLowerCase().includes(filter.toLowerCase())));
-    }else{
-      filtered=filtered.filter(i=>{if(i.seasons&&i.seasons.length)return i.seasons.some(s=>s.links.some(l=>l.qual.includes(filter)));return(i.links||[]).some(l=>(l.qual||l.q||'').includes(filter));});
-    }
+    filtered=filtered.filter(i=>{
+      if(i.seasons&&i.seasons.length)return i.seasons.some(s=>s.links.some(l=>(l.qual||l.q||'').includes(filter)));
+      return(i.links||[]).some(l=>(l.qual||l.q||'').includes(filter));
+    });
   }
   if(sortBy==='rating')filtered.sort((a,b)=>parseFloat(b.rating||0)-parseFloat(a.rating||0));
   else if(sortBy==='year')filtered.sort((a,b)=>parseInt(b.year||0)-parseInt(a.year||0));
@@ -753,34 +874,35 @@ function render(){
   if(page>=tp)page=Math.max(0,tp-1);
   const pi=filtered.slice(page*PP,(page+1)*PP);
   const grid=document.getElementById('grid');
-  if(!filtered.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ic">😔</div><p>یافت نشد</p></div>'}
-  else{
+  if(!filtered.length){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ic">'+IC.empty+'</div><p>موردی یافت نشد</p></div>';
+  }else{
     grid.innerHTML=pi.map((it,idx)=>cardHTML(it,(page*PP)+idx)).join('');
-    grid.querySelectorAll('.cs-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openCineScore(b.dataset.csTitle,b.dataset.csId)}));
-    grid.querySelectorAll('.card').forEach(c=>c.addEventListener('click',e=>{if(e.target.closest('a,details,summary,.cs-btn,.cp'))return;const it=filtered[parseInt(c.dataset.idx)];if(it)openDetail(it);}));
+    bindGridInteractions(grid,filtered);
   }
   const pg=document.getElementById('pg');
   if(tp<=1){pg.innerHTML='';return}
-  let h='<button class="pb"'+(page===0?' disabled':'')+' onclick="gp('+(page-1)+')">◀</button>';
+  let h='<button type="button" class="pb" aria-label="صفحه قبل"'+(page===0?' disabled':'')+' onclick="gp('+(page-1)+')">◀</button>';
   const s=Math.max(0,page-2),e=Math.min(tp,s+5);
-  for(let i=s;i<e;i++)h+='<button class="pb'+(i===page?' act':'')+'" onclick="gp('+i+')">'+(i+1)+'</button>';
-  h+='<button class="pb"'+(page>=tp-1?' disabled':'')+' onclick="gp('+(page+1)+')">▶</button>';
+  for(let i=s;i<e;i++)h+='<button type="button" class="pb'+(i===page?' act':'')+'"'+(i===page?' aria-current="page"':'')+' onclick="gp('+i+')">'+(i+1)+'</button>';
+  h+='<button type="button" class="pb" aria-label="صفحه بعد"'+(page>=tp-1?' disabled':'')+' onclick="gp('+(page+1)+')">▶</button>';
   pg.innerHTML=h;
 }
 function gp(p){page=p;render();loadPagePosters();document.getElementById('resSection').scrollIntoView({behavior:'smooth'})}
 
-function gp(p){page=p;render();loadPagePosters();document.getElementById('resSection').scrollIntoView({behavior:'smooth'})}
-
 function renderFilters(){
-  if(tab==='sermovie')return; // renderSermovie handles its own filters
+  if(tab==='sermovie'||tab==='intro')return;
   const items=DATA[tab]||[];const qs=new Set();
-  items.forEach(i=>(i.links||[]).forEach(l=>{const n=((l.qual||l.q||'').match(/(\d+)p/)||[])[1];if(n)qs.add(n+'p')}));
-  let h=`<button class="fbtn ${sortBy==='year'?'active':''}" onclick="ss('year')">📅 سال</button>`;
-  h+=`<button class="fbtn ${sortBy==='rating'?'active':''}" onclick="ss('rating')">⭐ امتیاز</button><button class="fbtn ${sortBy==='votes'?'active':''}" onclick="ss('votes')">🗳 رأی</button>`;
-  h+=`<button class="fbtn ${sortBy==='title'?'active':''}" onclick="ss('title')">🔤 نام</button>`;
+  items.forEach(i=>{
+    (i.links||[]).forEach(l=>{const n=((l.qual||l.q||'').match(/(\d+)p/)||[])[1];if(n)qs.add(n+'p')});
+    (i.seasons||[]).forEach(s=>(s.links||[]).forEach(l=>{const n=((l.qual||l.q||'').match(/(\d+)p/)||[])[1];if(n)qs.add(n+'p')}));
+  });
+  let h=`<button type="button" class="fbtn ${sortBy==='year'?'active':''}" onclick="ss('year')">${IC.cal} سال</button>`;
+  h+=`<button type="button" class="fbtn ${sortBy==='rating'?'active':''}" onclick="ss('rating')">${IC.star} امتیاز</button><button type="button" class="fbtn ${sortBy==='votes'?'active':''}" onclick="ss('votes')">${IC.vote} رأی</button>`;
+  h+=`<button type="button" class="fbtn ${sortBy==='title'?'active':''}" onclick="ss('title')">${IC.sort} نام</button>`;
   h+=`<span style="border-right:1px solid var(--border);margin:0 3px"></span>`;
-  h+=`<button class="fbtn ${filter==='all'?'active':''}" onclick="sf('all')">همه</button>`;
-  h+=[...qs].sort((a,b)=>parseInt(b)-parseInt(a)).map(q=>`<button class="fbtn ${filter===q?'active':''}" onclick="sf('${q}')">${q}</button>`).join('');
+  h+=`<button type="button" class="fbtn ${filter==='all'?'active':''}" onclick="sf('all')">همه</button>`;
+  h+=[...qs].sort((a,b)=>parseInt(b)-parseInt(a)).map(q=>`<button type="button" class="fbtn ${filter===q?'active':''}" onclick="sf('${q}')">${q}</button>`).join('');
   document.getElementById('filterBar').innerHTML=h;
 }
 function sf(f){filter=f;page=0;renderFilters();render()}
@@ -788,91 +910,91 @@ function ss(s){sortBy=s;page=0;renderFilters();render()}
 
 // Load sermovie data from db.json
 let sermovieLoaded=false;
-let sermovieTab='all'; // 'all', 'movie', 'series'
+let sermovieTab='all';
+function populateSermovieFromDb(db){
+  if(!db||sermovieLoaded)return;
+  const items=[];
+  if(db.m)db.m.forEach(m=>{
+    items.push({title:m.t.replace(/\./g,' '),imdbId:m.i||'',rating:saneRating(m.r),votes:m.v||'',year:saneYear(m.y),type:'movie',subType:(m.subTypes||[]).join(', '),links:(m.l||[]).map(l=>({href:l.u,qual:l.q,size:l.s||'',season:'',sub:l.sub||''}))});
+  });
+  if(db.a)db.a.forEach(s=>{
+    items.push({title:s.t.replace(/\./g,' '),imdbId:s.i||'',rating:saneRating(s.r),votes:s.v||'',year:saneYear(s.y),type:'anime',subType:'',seasons:(s.seasons||[]).map(ss=>({num:ss.num,sub:ss.sub,links:ss.links.map(l=>({href:l.u,qual:l.q,size:l.s||''}))})),links:(s.l||[]).map(l=>({href:l.u,qual:l.q,size:l.s||'',season:'',sub:''}))});
+  });
+  if(db.s)db.s.forEach(s=>{
+    items.push({title:s.t.replace(/\./g,' '),imdbId:s.i||'',rating:saneRating(s.r),votes:s.v||'',year:saneYear(s.y),type:'series',subType:'',seasons:(s.seasons||[]).map(ss=>({num:ss.num,sub:ss.sub,links:ss.links.map(l=>({href:l.u,qual:l.q,size:l.s||''}))})),links:(s.l||[]).map(l=>({href:l.u,qual:l.q,size:l.s||'',season:'',sub:''}))});
+  });
+  items.sort((a,b)=>parseInt(b.year||0)-parseInt(a.year||0));
+  items.forEach(x=>x._ser=1);
+  DATA.sermovie=items;
+  sermovieLoaded=true;
+}
 async function loadSermovieData(){
   if(sermovieLoaded)return;
   try{
-    const r=await fetch('public/db.json?'+Date.now());
+    const r=await fetch('public/db.json');
     if(!r.ok)return;
     const db=await r.json();
-    const items=[];
-    if(db.m)db.m.forEach(m=>{
-      items.push({title:m.t.replace(/\./g,' '),imdbId:m.i||'',rating:saneRating(m.r),votes:m.v||'',year:m.y,type:'movie',subType:(m.subTypes||[]).join(', '),links:(m.l||[]).map(l=>({href:l.u,qual:l.q,size:l.s||'',season:'',sub:l.sub||''}))});
-    });
-    if(db.a)db.a.forEach(s=>{s.type='anime';items.push({title:s.t.replace(/\./g,' '),imdbId:s.i||'',rating:saneRating(s.r),votes:s.v||'',year:s.y,type:'anime',subType:'',seasons:(s.seasons||[]).map(ss=>({num:ss.num,sub:ss.sub,links:ss.links.map(l=>({href:l.u,qual:l.q,size:l.s||''}))})),links:(s.l||[]).map(l=>({href:l.u,qual:l.q,size:l.s||'',season:'',sub:''}))});});
-    if(db.s)db.s.forEach(s=>{
-      items.push({title:s.t.replace(/\./g,' '),imdbId:s.i||'',rating:saneRating(s.r),votes:s.v||'',year:s.y,type:'series',subType:'',seasons:(s.seasons||[]).map(ss=>({num:ss.num,sub:ss.sub,links:ss.links.map(l=>({href:l.u,qual:l.q,size:l.s||''}))})),links:(s.l||[]).map(l=>({href:l.u,qual:l.q,size:l.s||'',season:'',sub:''}))});
-    });
-    // Sort by year descending
-    items.sort((a,b)=>parseInt(b.year||0)-parseInt(a.year||0));
-    items.forEach(x=>x._ser=1);DATA.sermovie=items;
-    sermovieLoaded=true;
-    if(tab==='sermovie'){renderSermovie();}
-  }catch(e){console.log('db.json load error:',e);}
+    populateSermovieFromDb(db);
+    if(tab==='sermovie')renderSermovie();
+  }catch(e){}
 }
 
 function renderSermovie(){
   if(globalQuery){renderGlobal();return;}
   const items=DATA.sermovie||[];
   let filtered=items;
-  // Sub-tab filter
   if(sermovieTab==='movie')filtered=items.filter(i=>i.type==='movie');
   else if(sermovieTab==='series')filtered=items.filter(i=>i.type==='series');
   else if(sermovieTab==='anime')filtered=items.filter(i=>i.type==='anime');
-  // Search filter
   if(query){
     const q=query.toLowerCase();
-    filtered=filtered.filter(i=>i.title.toLowerCase().includes(q)||(i.year||'').includes(q));
+    filtered=filtered.filter(i=>i.title.toLowerCase().includes(q)||(i.year||'').includes(q)||(i.imdbId||'').toLowerCase().includes(q));
   }
-  // Quality filter
   if(filter!=='all'){
-    filtered=filtered.filter(i=>(i.links||[]).some(l=>(l.qual||'').includes(filter)));
+    filtered=filtered.filter(i=>{
+      if(i.seasons&&i.seasons.length&&i.seasons.some(s=>s.links.some(l=>(l.qual||l.q||'').includes(filter))))return true;
+      return(i.links||[]).some(l=>(l.qual||l.q||'').includes(filter));
+    });
   }
-  // Sort
   if(sortBy==='rating')filtered.sort((a,b)=>parseFloat(b.rating||0)-parseFloat(a.rating||0));
-  else if(sortBy==='year')filtered.sort((a,b)=>parseInt(b.year||0)-parseInt(a.year||0));
+  else if(sortBy==='year'||sortBy==='newest')filtered.sort((a,b)=>parseInt(b.year||0)-parseInt(a.year||0));
   else if(sortBy==='title')filtered.sort((a,b)=>a.title.localeCompare(b.title,'fa'));
-  else if(sortBy==='newest')filtered.sort((a,b)=>parseInt(b.year||0)-parseInt(a.year||0));
-  // Count
   const movieCount=items.filter(i=>i.type==='movie').length;
   const seriesCount=items.filter(i=>i.type==='series').length;
-    const animeCount=items.filter(i=>i.type==='anime').length;
-  // Render sub-tabs
+  const animeCount=items.filter(i=>i.type==='anime').length;
   const subTabs=document.getElementById('filterBar');
   subTabs.innerHTML=
-    `<button class="fbtn ${sermovieTab==='all'?'active':''}" onclick="sermovieTab='all';renderSermovie()">همه (${items.length})</button>`+
-    `<button class="fbtn ${sermovieTab==='movie'?'active':''}" onclick="sermovieTab='movie';renderSermovie()">🎬 فیلم (${movieCount})</button>`+
-    `<button class="fbtn ${sermovieTab==='series'?'active':''}" onclick="sermovieTab='series';renderSermovie()">📺 سریال (${seriesCount})</button>`+
-    `<button class="fbtn ${sermovieTab==='anime'?'active':''}" onclick="sermovieTab='anime';renderSermovie()">🎌 انیمه (${animeCount})</button>`+
+    `<button type="button" class="fbtn ${sermovieTab==='all'?'active':''}" onclick="sermovieTab='all';page=0;renderSermovie()">همه (${items.length})</button>`+
+    `<button type="button" class="fbtn ${sermovieTab==='movie'?'active':''}" onclick="sermovieTab='movie';page=0;renderSermovie()">${IC.film} فیلم (${movieCount})</button>`+
+    `<button type="button" class="fbtn ${sermovieTab==='series'?'active':''}" onclick="sermovieTab='series';page=0;renderSermovie()">${IC.tv} سریال (${seriesCount})</button>`+
+    `<button type="button" class="fbtn ${sermovieTab==='anime'?'active':''}" onclick="sermovieTab='anime';page=0;renderSermovie()">${IC.anime} انیمه (${animeCount})</button>`+
     `<span style="border-right:1px solid var(--border);margin:0 3px"></span>`+
-    `<button class="fbtn ${sortBy==='newest'?'active':''}" onclick="sortBy='newest';renderSermovie()">🆕 جدیدترین</button>`+
-    `<button class="fbtn ${sortBy==='rating'?'active':''}" onclick="sortBy='rating';renderSermovie()">⭐ امتیاز</button>`+
-    `<button class="fbtn ${sortBy==='year'?'active':''}" onclick="sortBy='year';renderSermovie()">📅 سال ساخت</button>`+
-    `<button class="fbtn ${sortBy==='title'?'active':''}" onclick="sortBy='title';renderSermovie()">🔤 نام</button>`;
-  // Pagination
+    `<button type="button" class="fbtn ${sortBy==='newest'||sortBy==='year'?'active':''}" onclick="sortBy='year';page=0;renderSermovie()">${IC.cal} سال ساخت</button>`+
+    `<button type="button" class="fbtn ${sortBy==='rating'?'active':''}" onclick="sortBy='rating';page=0;renderSermovie()">${IC.star} امتیاز</button>`+
+    `<button type="button" class="fbtn ${sortBy==='title'?'active':''}" onclick="sortBy='title';page=0;renderSermovie()">${IC.sort} نام</button>`+
+    `<span style="border-right:1px solid var(--border);margin:0 3px"></span>`+
+    `<button type="button" class="fbtn ${filter==='all'?'active':''}" onclick="filter='all';page=0;renderSermovie()">همه کیفیت‌ها</button>`+
+    `<button type="button" class="fbtn ${filter==='1080p'?'active':''}" onclick="filter='1080p';page=0;renderSermovie()">1080p</button>`+
+    `<button type="button" class="fbtn ${filter==='720p'?'active':''}" onclick="filter='720p';page=0;renderSermovie()">720p</button>`;
   document.getElementById('resCount').textContent=filtered.length;
   const tp=Math.ceil(filtered.length/PP);
   if(page>=tp)page=Math.max(0,tp-1);
   const pi=filtered.slice(page*PP,(page+1)*PP);
   const grid=document.getElementById('grid');
-  if(!filtered.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ic">😔</div><p>یافت نشد</p></div>';return;}
+  if(!filtered.length){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ic">'+IC.empty+'</div><p>موردی یافت نشد</p></div>';
+    document.getElementById('pg').innerHTML='';
+    return;
+  }
   grid.innerHTML=pi.map((it,idx)=>cardHTML(it,(page*PP)+idx)).join('');
-    // Open detail modal on card click
-  grid.querySelectorAll('.cs-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openCineScore(b.dataset.csTitle,b.dataset.csId)}));
-  grid.querySelectorAll('.card').forEach(c=>c.addEventListener('click',e=>{
-    if(e.target.closest('a,details,summary,.cs-btn,.cp'))return;
-    const it=filtered[parseInt(c.dataset.idx)];
-    if(it)openDetail(it);
-  }));
-  // Auto-load posters for visible cards
+  bindGridInteractions(grid,filtered);
   loadSermoviePosters(pi);
-  // Pagination
   const pg=document.getElementById('pg');
   if(tp<=1){pg.innerHTML='';return;}
-  let h=`<button class="pb" ${page===0?'disabled':''} onclick="gp(${page-1})">◀</button>`;
+  let h=`<button type="button" class="pb" aria-label="صفحه قبل" ${page===0?'disabled':''} onclick="gp(${page-1})">◀</button>`;
   const s=Math.max(0,page-2),e=Math.min(tp,s+5);
-  for(let i=s;i<e;i++)h+=`<button class="pb ${i===page?'act':''}" onclick="gp(${i})">${i+1}</button>`;
-  h+=`<button class="pb" ${page>=tp-1?'disabled':''}" onclick="gp(${page+1})">▶</button>`;
+  for(let i=s;i<e;i++)h+=`<button type="button" class="pb ${i===page?'act':''}" ${i===page?'aria-current="page"':''} onclick="gp(${i})">${i+1}</button>`;
+  h+=`<button type="button" class="pb" aria-label="صفحه بعد" ${page>=tp-1?'disabled':''} onclick="gp(${page+1})">▶</button>`;
   pg.innerHTML=h;
 }
 
@@ -885,7 +1007,6 @@ async function loadSermoviePosters(items){
     if(x){
       if(!it.rating&&x.r)it.rating=x.r;
       oc[it.title]={poster:x.p||x.p_raw,rating:x.r,votes:x.v,imdbId:x.i};
-      // Update card if visible
       const cards=document.querySelectorAll('.card');
       cards.forEach(c=>{
         const titleEl=c.querySelector('.card-title');
@@ -893,7 +1014,7 @@ async function loadSermoviePosters(items){
           const posterEl=c.querySelector('.card-poster');
           if(posterEl&&!posterEl.querySelector('img')&&(x.p||x.p_raw)){
             const ph=document.createElement('div');
-            ph.innerHTML=csPosterHTML(x.p,x.p_raw,it.title,it.title);
+            ph.innerHTML=csPosterHTML(x.p,x.p_raw,it.title,it.type!=='movie');
             posterEl.innerHTML=ph.firstChild?ph.firstChild.outerHTML:'';
           }
         }
@@ -903,12 +1024,18 @@ async function loadSermoviePosters(items){
   }
 }
 
-// Tabs
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');
-  tab=t.dataset.t;page=0;filter="all";query="";sortBy='rating';sermovieTab='all';introView='grid';activeCol=null;globalQuery='';
-  document.getElementById("si").value="";document.getElementById('sclr').style.display='none';
-  document.getElementById("lsi").value="";
+function activateTab(targetTab){
+  const valid=['movies','series','sermovie','intro'];
+  if(!valid.includes(targetTab))targetTab='movies';
+  document.querySelectorAll('.tab').forEach(x=>{
+    const isAct=x.dataset.t===targetTab;
+    x.classList.toggle('active',isAct);
+    if(isAct)x.setAttribute('aria-current','page');
+    else x.removeAttribute('aria-current');
+  });
+  tab=targetTab;page=0;filter='all';query='';sortBy='rating';sermovieTab='all';introView='grid';activeCol=null;globalQuery='';
+  document.getElementById('si').value='';document.getElementById('sclr').style.display='none';
+  document.getElementById('lsi').value='';document.getElementById('lclr').style.display='none';
   document.getElementById('filterBar').innerHTML='';
   document.getElementById('lsearchBox').style.display=(tab==='intro')?'none':'flex';
   if(tab==='sermovie'){
@@ -916,17 +1043,19 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
     document.getElementById('grid').innerHTML='';
     loadSermovieData().then(()=>renderSermovie());
   }else if(tab==='intro'){
-    document.getElementById('grid').innerHTML='<div class="empty"><div class="ic">⭐</div><p>در حال بارگذاری مجموعه‌ها...</p></div>';
+    document.getElementById('grid').innerHTML='<div class="empty"><div class="ic">'+IC.sparkle+'</div><p>در حال بارگذاری مجموعه‌ها...</p></div>';
     document.getElementById('resCount').textContent='…';
     loadCols().then(()=>renderIntro());
   }else{
     renderFilters();render();
-    loadPagePosters(); // fill any missing posters immediately
+    loadPagePosters();
   }
-}));
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>activateTab(t.dataset.t)));
 
 // ===== Search =====
-// Header box = GLOBAL search across all sections; per-section box = local.
 let globalQuery='';
 function renderGlobal(){
   const q=globalQuery.toLowerCase();
@@ -936,7 +1065,7 @@ function renderGlobal(){
   const match=(t,y)=>nm(t).includes(q)||(ql&&nm(t).replace(/[^a-z0-9\u0600-\u06FF]+/g,' ').includes(qln))||String(y||'').includes(q);
   const merged=[];
   const seen=new Set();
-  const push=(arr,tp)=>{
+  const push=arr=>{
     arr.forEach(it=>{
       if(!match(it.title,it.year))return;
       const key=it.imdbId||(nm(it.title)+'|'+(it.year||''));
@@ -951,24 +1080,18 @@ function renderGlobal(){
   document.getElementById('resCount').textContent=merged.length;
   document.getElementById('pg').innerHTML='';
   const grid=document.getElementById('grid');
-  if(!merged.length){grid.innerHTML='<div class="empty"><div class="ic">😔</div><p>چیزی پیدا نشد</p></div>';return;}
+  if(!merged.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ic">'+IC.empty+'</div><p>چیزی پیدا نشد</p></div>';return;}
   const shown=merged.slice(0,90);
   grid.innerHTML=shown.map((it,idx)=>cardHTML(it,idx)).join('');
-  grid.querySelectorAll('.cs-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openCineScore(b.dataset.csTitle,b.dataset.csId)}));
-  grid.querySelectorAll('.card').forEach(c=>c.addEventListener('click',e=>{
-    if(e.target.closest('a,details,summary,.cs-btn,.cp'))return;
-    const it=shown[parseInt(c.dataset.idx)];
-    if(it)openDetail(it);
-  }));
+  bindGridInteractions(grid,shown);
   applyCSPosters();
-  // enrich sermovie-typed cards (title->imdbId->poster)
   const serItems=shown.filter(it=>it._ser);
   if(serItems.length)loadSermoviePosters(serItems);
 }
 let sTimer=null,lTimer=null;
 document.getElementById("si").addEventListener("input",e=>{
   const v=e.target.value;
-  document.getElementById('sclr').style.display=v?'inline-block':'none';
+  document.getElementById('sclr').style.display=v?'inline-flex':'none';
   clearTimeout(sTimer);
   sTimer=setTimeout(()=>{globalQuery=v.trim();page=0;render()},200);
 });
@@ -979,10 +1102,11 @@ document.getElementById("sclr").addEventListener("click",()=>{
   document.getElementById("si").value="";
   document.getElementById('sclr').style.display='none';
   globalQuery='';page=0;render();
+  document.getElementById("si").focus();
 });
 document.getElementById("lsi").addEventListener("input",e=>{
   const v=e.target.value;
-  document.getElementById('lclr').style.display=v?'inline-block':'none';
+  document.getElementById('lclr').style.display=v?'inline-flex':'none';
   clearTimeout(lTimer);
   lTimer=setTimeout(()=>{query=v.trim();page=0;render()},200);
 });
@@ -990,137 +1114,98 @@ document.getElementById("lclr").addEventListener("click",()=>{
   document.getElementById("lsi").value="";
   document.getElementById('lclr').style.display='none';
   query='';page=0;render();
+  document.getElementById("lsi").focus();
 });
 
 // Theme
+function syncThemeIcon(){
+  const isDark=document.documentElement.dataset.theme==='dark';
+  const btn=document.getElementById('thB');
+  btn.innerHTML=isDark?IC.moon:IC.sun;
+  btn.setAttribute('aria-label',isDark?'تغییر به پوسته روشن':'تغییر به پوسته تیره');
+}
 const savedTheme=(()=>{try{return localStorage.getItem('cinemaTheme')}catch(e){return null}})();
 if(savedTheme==='light'||savedTheme==='dark')document.documentElement.dataset.theme=savedTheme;
-document.getElementById('thB').textContent=document.documentElement.dataset.theme==='dark'?'🌙':'☀️';
-document.getElementById('thB').addEventListener('click',()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;document.getElementById('thB').textContent=t==='dark'?'🌙':'☀️';try{localStorage.setItem('cinemaTheme',t)}catch(e){}});
+syncThemeIcon();
+document.getElementById('thB').addEventListener('click',()=>{
+  const t=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=t;
+  syncThemeIcon();
+  try{localStorage.setItem('cinemaTheme',t)}catch(e){}
+});
 
-// Fetch from server
-// Auto-load archive data
+// Auto-load archive data immediately without blocking on network requests
 async function autoLoad(){
   var loadText=document.getElementById('loadText');
   var loadSpinner=document.getElementById('loadSpinner');
   var loadManual=document.getElementById('loadManual');
-  
-  // Load ARCHIVE data from external file
-  
-  // Check cached data first
+
   var cached=null;
   try{cached=JSON.parse(localStorage.getItem('mf_crawl')||'null')}catch(e){}
-  
-  // Try loading crawled database from GitHub Pages
-  var crawledDb=null;
-  try{
-    var dbResp=await fetch('public/db.json?'+Date.now());
-    if(dbResp.ok) crawledDb=await dbResp.json();
-  }catch(e){}
-  
-  // Use embedded data
+
+  // 1. Synchronously load embedded ARCHIVE so UI renders in <50ms
+  var renderedInitial=false;
   try{
     if(typeof ARCHIVE!=='undefined'&&ARCHIVE.m&&ARCHIVE.m.length){
-      DATA.movies=ARCHIVE.m.map(function(i){return{title:i.t,imdbId:i.i,rating:saneRating(i.r),votes:i.v,year:i.y,type:'movie',links:i.l.map(function(l){return{href:l.u,qual:l.q,size:l.s||'',season:'',sub:''}})}});
-      DATA.series=ARCHIVE.s.map(function(i){return{title:i.t,imdbId:i.i,rating:saneRating(i.r),votes:i.v,year:i.y,type:'series',seasons:(i.seasons||[]).map(function(s){return{num:s.num,sub:s.sub,links:s.links.map(function(l){return{href:l.u,qual:l.q,size:l.s||''}})}}),links:i.l.map(function(l){return{href:l.u,qual:l.q,size:l.s||'',season:'',sub:''}})}});
-      
-      // Merge crawled database from db.json
+      DATA.movies=ARCHIVE.m.map(function(i){return{title:i.t,imdbId:i.i,rating:saneRating(i.r),votes:i.v,year:saneYear(i.y),type:'movie',links:i.l.map(function(l){return{href:l.u,qual:l.q,size:l.s||'',season:'',sub:''}})}});
+      DATA.series=ARCHIVE.s.map(function(i){return{title:i.t,imdbId:i.i,rating:saneRating(i.r),votes:i.v,year:saneYear(i.y),type:'series',seasons:(i.seasons||[]).map(function(s){return{num:s.num,sub:s.sub,links:s.links.map(function(l){return{href:l.u,qual:l.q,size:l.s||''}})}}),links:i.l.map(function(l){return{href:l.u,qual:l.q,size:l.s||'',season:'',sub:''}})}});
+      if(cached&&cached.movies)cached.movies.forEach(function(m){if(!DATA.movies.find(function(x){return x.imdbId===m.imdbId}))DATA.movies.push(m)});
+      if(cached&&cached.series)cached.series.forEach(function(s){if(!DATA.series.find(function(x){return x.imdbId===s.imdbId}))DATA.series.push(s)});
+      loadText.textContent=DATA.movies.length+' فیلم، '+DATA.series.length+' سریال';
+      loadSpinner.style.display='none';
+      showResults(true);
+      renderedInitial=true;
+    }
+  }catch(e){}
+
+  // 2. Asynchronously merge public/db.json in background
+  try{
+    var dbResp=await fetch('public/db.json');
+    if(dbResp.ok){
+      var crawledDb=await dbResp.json();
+      populateSermovieFromDb(crawledDb);
+      var added=false;
       if(crawledDb&&crawledDb.m){
         crawledDb.m.forEach(function(m){
           if(!DATA.movies.find(function(x){return x.title===m.t&&x.year===m.y})){
-            DATA.movies.push({title:m.t,imdbId:m.i||'',rating:saneRating(m.r),votes:m.v||'',year:m.y,type:'movie',links:(m.l||[]).map(function(l){return{href:l.u,qual:l.q,size:l.s||'',season:'',sub:l.sub||''}})});
+            DATA.movies.push({title:m.t,imdbId:m.i||'',rating:saneRating(m.r),votes:m.v||'',year:saneYear(m.y),type:'movie',links:(m.l||[]).map(function(l){return{href:l.u,qual:l.q,size:l.s||'',season:'',sub:l.sub||''}})});
+            added=true;
           }
         });
       }
       if(crawledDb&&crawledDb.s){
         crawledDb.s.forEach(function(s){
           if(!DATA.series.find(function(x){return x.title===s.t&&x.year===s.y})){
-            DATA.series.push({title:s.t,imdbId:s.i||'',rating:saneRating(s.r),votes:s.v||'',year:s.y,type:'series',seasons:(s.seasons||[]).map(function(ss){return{num:ss.num,sub:ss.sub,links:ss.links.map(function(l){return{href:l.u,qual:l.q,size:l.s||''}})}}),links:(s.l||[]).map(function(l){return{href:l.u,qual:l.q,size:l.s||'',season:'',sub:''}})});
+            DATA.series.push({title:s.t,imdbId:s.i||'',rating:saneRating(s.r),votes:s.v||'',year:saneYear(s.y),type:'series',seasons:(s.seasons||[]).map(function(ss){return{num:ss.num,sub:ss.sub,links:ss.links.map(function(l){return{href:l.u,qual:l.q,size:l.s||''}})}}),links:(s.l||[]).map(function(l){return{href:l.u,qual:l.q,size:l.s||'',season:'',sub:''}})});
+            added=true;
           }
         });
       }
-      // Merge cached new items
-      if(cached&&cached.movies)cached.movies.forEach(function(m){if(!DATA.movies.find(function(x){return x.imdbId===m.imdbId}))DATA.movies.push(m)});
-      if(cached&&cached.series)cached.series.forEach(function(s){if(!DATA.series.find(function(x){return x.imdbId===s.imdbId}))DATA.series.push(s)});
-      
-      loadText.textContent='✅ '+DATA.movies.length+' فیلم، '+DATA.series.length+' سریال';
-      loadSpinner.style.display='none';
-      showResults();
-      
-      // Crawl for new content in background
-      crawlForNew();
-      return;
+      if(!renderedInitial&&(DATA.movies.length||DATA.series.length)){
+        loadSpinner.style.display='none';
+        showResults(true);
+        renderedInitial=true;
+      }else if(added&&tab!=='intro'){
+        renderFilters();
+        render();
+      }
     }
   }catch(e){}
-  
-  // Fallback: try crawled db.json first
-  if(crawledDb&&(crawledDb.m||crawledDb.s)){
-    DATA.movies=(crawledDb.m||[]).map(function(m){return{title:m.t,imdbId:m.i||'',rating:saneRating(m.r),votes:m.v||'',year:m.y,type:'movie',links:(m.l||[]).map(function(l){return{href:l.u,qual:l.q,size:l.s||'',season:'',sub:l.sub||''}})}});
-    DATA.series=(crawledDb.s||[]).map(function(s){return{title:s.t,imdbId:s.i||'',rating:saneRating(s.r),votes:s.v||'',year:s.y,type:'series',seasons:(s.seasons||[]).map(function(ss){return{num:ss.num,sub:ss.sub,links:ss.links.map(function(l){return{href:l.u,qual:l.q,size:l.s||''}})}}),links:(s.l||[]).map(function(l){return{href:l.u,qual:l.q,size:l.s||'',season:'',sub:''}})}});
-    loadText.textContent='✅ '+DATA.movies.length+' فیلم، '+DATA.series.length+' سریال (از سرور سرو)';
+
+  if(!renderedInitial){
+    loadText.textContent='دسترسی به سرور ممکن نیست. فایل آرشیو را انتخاب کنید.';
     loadSpinner.style.display='none';
-    showResults();
-    return;
+    loadManual.style.display='flex';
   }
-  
-  // Fallback: try original server
-  loadText.textContent='در حال دریافت از سرور...';
-  loadSpinner.style.display='block';
-  loadManual.style.display='none';
-  
-  var urls=[
-    {url:'https://dls3.aparatchi-dlcenter.top/DonyayeSerial/top_5000_movies.html',type:'movies'},
-    {url:'https://dls3.aparatchi-dlcenter.top/DonyayeSerial/top_1000_series.html',type:'series'}
-  ];
-  var proxies=[function(u){return'https://api.allorigins.win/raw?url='+encodeURIComponent(u)},function(u){return u}];
-  
-  Promise.all(urls.map(function(item){
-    return new Promise(function(resolve){
-      var found=false;
-      proxies.forEach(function(px){
-        if(found)return;
-        var c=new AbortController();
-        var t=setTimeout(function(){c.abort()},20000);
-        fetch(px(item.url),{signal:c.signal}).then(function(r){
-          clearTimeout(t);
-          if(!r.ok)return;
-          return r.text();
-        }).then(function(txt){
-          if(txt&&txt.includes('<h3>')&&txt.includes('IMDb Code')){
-            found=true;
-            var items=parseHTML(txt,item.type);
-            if(items.length){
-              DATA[item.type]=items;
-              resolve();
-            }
-          }
-        }).catch(function(){});
-      });
-      setTimeout(function(){resolve()},25000);
-    });
-  })).then(function(){
-    if(DATA.movies.length||DATA.series.length){
-      loadText.textContent='✅ بارگذاری شد';
-      loadSpinner.style.display='none';
-      showResults();
-    }else{
-      loadText.textContent='⚠️ دسترسی به سرور ممکن نیست. فایل را انتخاب کنید.';
-      loadSpinner.style.display='none';
-      loadManual.style.display='flex';
-    }
-  });
 }
 
-// Crawl server for new movies/series
+// Crawl server for new movies/series when manually requested
 async function crawlForNew(){
   var servers=['dls3','dls9'];
   var newMovies=[];
   var newSeries=[];
-  
   for(var si=0;si<servers.length;si++){
     var base='https://'+servers[si]+'.aparatchi-dlcenter.top/DonyayeSerial';
-    
-    // Crawl recent movie years
     try{
       var years=[2026,2025];
       for(var yi=0;yi<years.length;yi++){
@@ -1136,8 +1221,6 @@ async function crawlForNew(){
         }catch(e){}
       }
     }catch(e){}
-    
-    // Crawl series
     try{
       var sHtml=await fetchProxy(base+'/series4/');
       var sIds=extractIMDBIds(sHtml);
@@ -1148,26 +1231,19 @@ async function crawlForNew(){
       });
     }catch(e){}
   }
-  
-  // Fetch OMDB info for new items
   var allNew=newMovies.concat(newSeries);
   if(allNew.length>0){
     for(var ni=0;ni<Math.min(allNew.length,50);ni++){
       var info=await getOmdb(allNew[ni].imdbId);
       if(info){
-        allNew[ni].title=info.t||allNew[ni].title;
-        allNew[ni].rating=info.r||'';
+        allNew[ni].title=info.title||allNew[ni].title;
+        allNew[ni].rating=info.rating||'';
       }
       await new Promise(function(r){setTimeout(r,150)});
     }
-    
-    // Add to data
     newMovies.forEach(function(m){if(m.title)DATA.movies.push(m)});
     newSeries.forEach(function(s){if(s.title)DATA.series.push(s)});
-    
-    // Cache
     try{localStorage.setItem('mf_crawl',JSON.stringify({movies:newMovies.filter(function(m){return m.title}),series:newSeries.filter(function(s){return s.title}),time:Date.now()}))}catch(e){}
-    
     if(newMovies.length||newSeries.length){
       render();
       renderFilters();
@@ -1205,10 +1281,6 @@ function fetchProxy(url){
   });
 }
 
-// Auto-load on page load
-// Auto-load on page load
-autoLoad();
-
 document.getElementById('fetchBtn').addEventListener('click',async()=>{
   const prog=document.getElementById('prog'),fill=document.getElementById('progFill'),text=document.getElementById('progText');
   prog.style.display='block';
@@ -1229,11 +1301,11 @@ document.getElementById('fetchBtn').addEventListener('click',async()=>{
     }
     if(html){
       DATA[type]=parseHTML(html,type);
-      text.textContent=`✅ ${DATA[type].length} ${type==='movies'?'فیلم':'سریال'}`;
-    }else{text.textContent=`⚠️ ${type==='movies'?'فیلم‌ها':'سریال‌ها'} قابل دسترسی نیست. فایل را انتخاب کنید.`}
+      text.textContent=`${DATA[type].length} ${type==='movies'?'فیلم':'سریال'} دریافت شد`;
+    }else{text.textContent=`${type==='movies'?'فیلم‌ها':'سریال‌ها'} قابل دسترسی نیست. فایل را انتخاب کنید.`}
   }
   fill.style.width='100%';
-  setTimeout(()=>{prog.style.display='none';if(DATA.movies.length||DATA.series.length){showResults()}},800);
+  setTimeout(()=>{prog.style.display='none';if(DATA.movies.length||DATA.series.length){showResults(false)}},800);
 });
 
 // File upload
@@ -1245,7 +1317,7 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
     const type=file.name.includes('movie')?'movies':'series';
     DATA[type]=parseHTML(html,type);
   }
-  if(DATA.movies.length||DATA.series.length)showResults();
+  if(DATA.movies.length||DATA.series.length)showResults(false);
 });
 // Drag drop
 const lb=document.getElementById('loadBox');
@@ -1253,38 +1325,37 @@ lb.addEventListener('dragover',e=>{e.preventDefault();lb.classList.add('drag')})
 lb.addEventListener('dragleave',()=>lb.classList.remove('drag'));
 lb.addEventListener('drop',async e=>{e.preventDefault();lb.classList.remove('drag');
   for(const file of e.dataTransfer.files){const html=await file.text();const type=file.name.includes('movie')?'movies':'series';DATA[type]=parseHTML(html,type)}
-  if(DATA.movies.length||DATA.series.length)showResults();
+  if(DATA.movies.length||DATA.series.length)showResults(false);
 });
 
-function showResults(){
-  try{sessionStorage.setItem('mf6data',JSON.stringify({movies:DATA.movies,series:DATA.series}))}catch(e){}
+function showResults(checkShortcut){
   document.getElementById('loadBox').style.display='none';
+  document.getElementById('resSection').style.display='block';
+  loadCSDB();
+  if(checkShortcut){
+    const urlTab=new URLSearchParams(location.search).get('t');
+    if(urlTab&&['movies','series','sermovie','intro'].includes(urlTab)){
+      activateTab(urlTab);
+      return;
+    }
+  }
+  document.getElementById('lsearchBox').style.display=(tab==='intro')?'none':'flex';
+  renderFilters();
+  render();
   loadPagePosters();
-  loadCSDB(); // preload CineScore db so posters/plots appear on cards immediately
-  document.getElementById('resSection').style.display='block';document.getElementById('lsearchBox').style.display=(tab==='intro')?'none':'flex';
-  renderFilters();render();
-  toast(`${DATA.movies.length} فیلم و ${DATA.series.length} سریال بارگذاری شد`,'s');
-}
-
-// Auto-show if cached
-if(DATA.movies.length||DATA.series.length)showResults();
-
-// Auto-fetch if no cached data
-if(!DATA.movies.length&&!DATA.series.length){
-  document.getElementById('fetchBtn').click();
 }
 
 // Batch load posters
 async function loadPosters(count=30){
-  const items=DATA[tab];
+  const items=DATA[tab]||[];
   const toLoad=items.filter(i=>i.imdbId&&!oc[i.imdbId]).slice(0,count);
   if(!toLoad.length)return;
   for(let i=0;i<toLoad.length;i++){
-    await getOmdb(toLoad[i].imdbId);
-    // Update just the poster image if card is visible
-    const card=document.querySelector(`.card[data-idx='${items.indexOf(toLoad[i])}'] .card-poster`);
-    if(card&&oc[toLoad[i].imdbId]?.poster&&!card.querySelector('img')){
-      card.innerHTML=`<img src="${oc[toLoad[i].imdbId].poster}" loading="lazy">`;
+    const it=toLoad[i];
+    await getOmdb(it.imdbId);
+    const card=document.querySelector(`.card[data-iid='${it.imdbId}'] .card-poster`);
+    if(card&&oc[it.imdbId]?.poster&&!card.querySelector('img')){
+      card.innerHTML=`<img src="${esc(oc[it.imdbId].poster)}" width="300" height="450" loading="lazy" alt="${esc(it.title)}">`;
     }
     await new Promise(r=>setTimeout(r,120));
   }
@@ -1302,7 +1373,7 @@ function loadPagePosters(){
     await getOmdb(it.imdbId);
     const card=document.querySelector(".card[data-iid='"+it.imdbId+"'] .card-poster");
     if(card&&oc[it.imdbId]?.poster&&!card.querySelector('img')){
-      card.innerHTML="<img src='"+oc[it.imdbId].poster+"' loading='lazy'>";
+      card.innerHTML="<img src='"+esc(oc[it.imdbId].poster)+"' width='300' height='450' loading='lazy' alt='"+esc(it.title)+"'>";
     }
     const pl=document.querySelector(".card[data-iid='"+it.imdbId+"'] .card-plot");
     if(pl&&oc[it.imdbId]?.plot&&!pl.textContent)pl.textContent=oc[it.imdbId].plot.length>110?oc[it.imdbId].plot.slice(0,110)+'…':oc[it.imdbId].plot;
@@ -1311,10 +1382,11 @@ function loadPagePosters(){
 
 let CSDB=null,CSMAP={},TSMAP={},COL=null,introView='grid',activeCol=null;
 function csPosterHTML(p,pRaw,title,isShow){
-  if(!p&&!pRaw)return'<div class="ni">'+(isShow?'📺':'🎬')+'</div>';
+  var fallbackIcon=isShow?IC.tv:IC.film;
+  if(!p&&!pRaw)return'<div class="ni">'+fallbackIcon+'</div>';
   var src=esc(p||pRaw);
   var alt=pRaw&&p!==pRaw?' data-raw="'+esc(pRaw)+'"':'';
-  return'<img src="'+src+'" loading="lazy" alt="'+esc(title||'')+'"'+alt+' onerror="if(this.dataset.raw){this.src=this.dataset.raw;this.removeAttribute(\'data-raw\')}else{this.outerHTML=\'<div class=&quot;ni&quot;>'+(isShow?'📺':'🎬')+'</div>\'}">';
+  return'<img src="'+src+'" width="300" height="450" loading="lazy" alt="'+esc(title||'')+'"'+alt+' onerror="if(this.dataset.raw){this.src=this.dataset.raw;this.removeAttribute(\'data-raw\')}else{this.style.display=\'none\'}">';
 }
 function applyCSPosters(){
   if(!Object.keys(CSMAP).length) return;
@@ -1324,7 +1396,7 @@ function applyCSPosters(){
     if(!cs) return;
     var posterEl=c.querySelector('.card-poster');
     if(posterEl&&!posterEl.querySelector('img')&&(cs.p||cs.p_raw)){
-      var ph=document.createElement('div');ph.innerHTML=csPosterHTML(cs.p,cs.p_raw,'',c.closest('.card').dataset.type!=='movie');
+      var ph=document.createElement('div');ph.innerHTML=csPosterHTML(cs.p,cs.p_raw,c.getAttribute('aria-label')||'',c.dataset.type!=='movie');
       posterEl.innerHTML=ph.firstChild.outerHTML;
     }
     var pl=c.querySelector('.card-plot');
@@ -1334,39 +1406,37 @@ function applyCSPosters(){
 async function loadCSDB(){
   if(CSDB)return CSDB;
   try{
-    // titles.json (~1MB): fast poster/rating data
     const r=await fetch('https://mohsen-niksirat.github.io/CineScore/public/titles.json');
     if(r.ok){
       CSDB=await r.json();
       (CSDB.items||[]).forEach(x=>{if(x.i){CSMAP[x.i]=x;TSMAP[String(x.t||'').toLowerCase()]=x;}});
       applyCSPosters();
-      // db.json (~11MB): full details (plot, genre, scores...) in background
       fetch('https://mohsen-niksirat.github.io/CineScore/public/db.json')
         .then(r2=>r2.ok?r2.json():null)
         .then(full=>{if(full&&full.items){(full.items||[]).forEach(x=>{if(x.i)CSMAP[x.i]=x;});CSDB=full;applyCSPosters();}})
         .catch(()=>{});
     }
-  }catch(e){console.log('csdb error',e)}
+  }catch(e){}
   return CSDB;
 }
 function csInfo(id){return id?CSMAP[id]||null:null;}
 async function loadCols(){
   if(COL)return COL;
   try{
-    const r=await fetch('public/collections.json?'+Date.now());
+    const r=await fetch('public/collections.json');
     if(r.ok)COL=await r.json();
   }catch(e){}
   return COL;
 }
 function bindCp(root){
-  root.querySelectorAll('.cp').forEach(b=>b.addEventListener('click',e=>{
+  root.querySelectorAll('.cp[data-u]').forEach(b=>b.addEventListener('click',e=>{
     e.stopPropagation();
     const u=b.dataset.u;
-    try{navigator.clipboard.writeText(u);toast('لینک کپی شد','s');}catch(e3){const t=document.createElement('textarea');t.value=u;document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(e4){}t.remove();toast('لینک کپی شد','s')}
-    
+    copyText(u);
+    toast('لینک کپی شد','s');
   }));
 }
-// External free-download/stream sites (tested reachable). One panel per title.
+// External free-download/stream sites
 const EXT_SOURCES=[
   {n:'فارسی‌پلکس',u:t=>'https://farsiplex.com/?s='+encodeURIComponent(t)},
   {n:'ایران موویز باکس',u:t=>'https://iranmoviesbox.com/?s='+encodeURIComponent(t)},
@@ -1382,37 +1452,46 @@ function externalSourcesHTML(title){
 }
 async function openDetail(item){
   if(!item)return;
+  lastFocusedEl=document.activeElement;
   const ov=document.getElementById('modalOv');
   ov.hidden=false;
   document.getElementById('mTitle').textContent=item.title;
   renderModal(item);
+  const closeBtn=document.getElementById('mClose');
+  if(closeBtn)closeBtn.focus();
   loadCSDB().then(()=>{if(!ov.hidden)renderModal(item)});
   if(item.imdbId&&!oc[item.imdbId])getOmdb(item.imdbId).then(()=>{if(!ov.hidden)renderModal(item)});
+}
+function closeDetailModal(){
+  const ov=document.getElementById('modalOv');
+  if(ov&&!ov.hidden){
+    ov.hidden=true;
+    if(lastFocusedEl&&typeof lastFocusedEl.focus==='function')lastFocusedEl.focus();
+  }
 }
 function renderModal(item){
   const info=oc[item.imdbId]||{};
   const cs=CSMAP[item.imdbId]||{};
-  const poster=cs.p||info.poster||'';
   const plot=cs.pl||info.plot||'';
   const year=item.year||info.year||cs.y||'';
   const rating=item.rating||info.rating||cs.r||'';
   const type=item.type==='anime'?'انیمه':(item.type==='series'||cs.tp==='s'?'سریال':'فیلم');
   const isShow=item.type==='series'||item.type==='anime';
   const runtime=(cs.rm?cs.rm+' min':'')||info.runtime||'';
-  let h=((cs.b||info.backdrop)?'<div class="m-backdrop"><img src="'+esc(cs.b||info.backdrop)+'" loading="lazy" alt="" onerror="this.parentElement.remove()"></div>':'')+
+  let h=((cs.b||info.backdrop)?'<div class="m-backdrop"><img src="'+esc(cs.b||info.backdrop)+'" width="720" height="405" loading="lazy" alt="" onerror="this.parentElement.remove()"></div>':'')+
     '<div class="m-head'+((cs.b||info.backdrop)?' with-bd':'')+'">'+
     '<div class="m-poster">'+csPosterHTML(cs.p||info.poster||'',cs.p_raw,item.title,isShow)+'</div>'+
     '<div class="m-info">'+
       '<div class="m-t">'+esc(item.title)+'</div>'+
       '<div class="card-meta" style="margin-top:6px">'+
-        (rating?'<span class="cb cb-r">⭐ '+esc(rating)+'</span>':'')+
+        (rating?'<span class="cb cb-r">'+IC.star+' '+esc(rating)+'</span>':'')+
         (year?'<span class="cb cb-y">'+esc(year)+'</span>':'')+
         '<span class="cb cb-t">'+type+'</span>'+
-        ((item.votes||info.votes)?'<span class="cb cb-v">🗳'+esc(item.votes||info.votes)+'</span>':'')+
+        ((item.votes||info.votes)?'<span class="cb cb-v">'+IC.vote+' '+esc(item.votes||info.votes)+'</span>':'')+
       '</div>'+
       '<div class="m-acts">'+
-        (item.imdbId?'<button type="button" class="m-btn gold" data-imdb="1">⭐ IMDb</button>':'')+
-        '<button type="button" class="m-btn" data-cs="1">📊 تحلیل در سینما اسکور</button>'+
+        (item.imdbId?'<button type="button" class="m-btn gold" data-imdb="1">'+IC.star+' IMDb</button>':'')+
+        '<button type="button" class="m-btn" data-cs="1">'+IC.chart+' تحلیل در سینما اسکور</button>'+
       '</div>'+
     '</div>'+
   '</div>';
@@ -1425,14 +1504,14 @@ function renderModal(item){
   if(cs.tm)sc.push({n:'TMDB',v:cs.tm.toFixed?(cs.tm.toFixed(1)):(cs.tm)});
   if(cs.rt)sc.push({n:'Rotten Tomatoes',v:cs.rt+'%'});
   if(cs.mc)sc.push({n:'Metacritic',v:cs.mc});
-  if(sc.length){h+='<div class="m-sec"><h4>🎯 امتیازات</h4><div class="m-acts">'+sc.map(s=>'<span class="m-score"><b>'+s.n+'</b> '+s.v+'</span>').join('')+'</div></div>';}
+  if(sc.length){h+='<div class="m-sec"><h4>'+IC.star+' امتیازات</h4><div class="m-acts">'+sc.map(s=>'<span class="m-score"><b>'+s.n+'</b> '+s.v+'</span>').join('')+'</div></div>';}
   const dlHtml=buildDLSection(item);
-  h+='<div class="m-sec"><h4>⬇ لینک‌های دانلود</h4>'+(dlHtml?dlHtml:'<div class="m-row" style="color:var(--text3)">لینک دانلود برای این عنوان موجود نیست.</div>')+'</div>';
-  h+='<div class="m-sec"><h4>🌐 همین عنوان در سایت‌های دیگر</h4><div class="m-src">'+externalSourcesHTML(item.title)+'</div></div>';
+  h+='<div class="m-sec"><h4>'+IC.dl+' لینک‌های دانلود</h4>'+(dlHtml?dlHtml:'<div class="m-row" style="color:var(--text3)">لینک دانلود برای این عنوان موجود نیست.</div>')+'</div>';
+  h+='<div class="m-sec"><h4>'+IC.globe+' همین عنوان در سایت‌های دیگر</h4><div class="m-src">'+externalSourcesHTML(item.title)+'</div></div>';
   document.getElementById('mBody').innerHTML=h;
   const b=document.getElementById('mBody');
   const imdb=b.querySelector('[data-imdb]');
-  if(imdb)imdb.addEventListener('click',()=>{if(item.imdbId)window.open('https://www.imdb.com/title/'+item.imdbId+'/','_blank')});
+  if(imdb)imdb.addEventListener('click',()=>{if(item.imdbId)window.open('https://www.imdb.com/title/'+item.imdbId+'/','_blank','noopener')});
   const cbtn=b.querySelector('[data-cs]');
   if(cbtn)cbtn.addEventListener('click',()=>openCineScore(item.title,item.imdbId));
   bindCp(b);
@@ -1443,19 +1522,25 @@ function renderIntro(){
   pg.innerHTML='';
   if(introView==='col'&&activeCol){renderColDetail(activeCol);return;}
   loadCols().then(cols=>{
-    if(!cols||!cols.length){grid.innerHTML='<div class="empty"><div class="ic">😔</div><p>مجموعه‌ای یافت نشد.</p></div>';return;}
+    if(!cols||!cols.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ic">'+IC.empty+'</div><p>مجموعه‌ای یافت نشد.</p></div>';return;}
     document.getElementById('resCount').textContent=cols.length+' مجموعه';
     grid.innerHTML='<div class="col-grid">'+cols.map((c,i)=>colCardHTML(c,i)).join('')+'</div>';
-    grid.querySelectorAll('.col-card').forEach(el=>el.addEventListener('click',()=>{
-      const c=cols[parseInt(el.dataset.i)];
-      introView='col';activeCol=c;renderColDetail(c);
-    }));
+    grid.querySelectorAll('.col-card').forEach(el=>{
+      const openCol=()=>{
+        const c=cols[parseInt(el.dataset.i)];
+        introView='col';activeCol=c;renderColDetail(c);
+      };
+      el.addEventListener('click',openCol);
+      el.addEventListener('keydown',e=>{
+        if(e.key==='Enter'||e.key===' '){e.preventDefault();openCol();}
+      });
+    });
   });
 }
 function colCardHTML(c,i){
-  const cover=c.cover?'<img src="'+esc(c.cover)+'" loading="lazy" alt="'+esc(c.title)+'" onerror="this.remove()">':'';
-  return '<div class="col-card" data-i="'+i+'">'+
-    '<div class="col-cover">'+cover+'<span class="col-emoji">'+c.emoji+'</span></div>'+
+  const cover=c.cover?'<img src="'+esc(c.cover)+'" width="400" height="225" loading="lazy" alt="'+esc(c.title)+'" onerror="this.remove()">':'';
+  return '<div class="col-card" tabindex="0" role="button" aria-label="'+esc(c.title)+'" data-i="'+i+'">'+
+    '<div class="col-cover">'+cover+'<span class="col-emoji" aria-hidden="true">'+IC.sparkle+'</span></div>'+
     '<div class="col-body">'+
       '<div class="col-t">'+esc(c.title)+'</div>'+
       '<div class="col-d">'+esc(c.desc)+'</div>'+
@@ -1463,10 +1548,19 @@ function colCardHTML(c,i){
     '</div>'+
   '</div>';
 }
+function bindColRowEvents(grid,rows){
+  grid.querySelectorAll('.c-row').forEach(el=>{
+    const openRow=()=>openDetail(rows[parseInt(el.dataset.i)]);
+    el.addEventListener('click',openRow);
+    el.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();openRow();}
+    });
+  });
+}
 function renderColDetail(c){
   const grid=document.getElementById('grid');
   document.getElementById('resCount').textContent=c.title;
-  grid.innerHTML='<div class="empty"><div class="ic">⏳</div><p>در حال بارگذاری...</p></div>';
+  grid.innerHTML='<div class="empty"><div class="sp"></div><p>در حال بارگذاری...</p></div>';
   const rows=c.items.map(it=>{
     let local=null;
     if(it.tp==='m'||it.tp==='movie')local=DATA.movies.find(x=>x.imdbId===it.i);
@@ -1475,24 +1569,22 @@ function renderColDetail(c){
     return local;
   });
   let h='<div class="cb-row">'+
-    '<button class="btn btn-g" id="introBack">→ بازگشت به مجموعه‌ها</button>'+
-    '<span style="font-size:.7rem;color:var(--text2)">'+esc(c.desc)+'</span></div>';
-  h+='<div class="c-rows">'+rows.map((it,idx)=>'<div class="c-row" data-i="'+idx+'">'+rowHTML(it)+'</div>').join('')+'</div>';
+    '<button type="button" class="btn btn-g" id="introBack">بازگشت به مجموعه‌ها</button>'+
+    '<span style="font-size:.72rem;color:var(--text2)">'+esc(c.desc)+'</span></div>';
+  h+='<div class="c-rows">'+rows.map((it,idx)=>'<div class="c-row" tabindex="0" role="button" aria-label="'+esc(it.title)+'" data-i="'+idx+'">'+rowHTML(it)+'</div>').join('')+'</div>';
   grid.innerHTML=h;
   document.getElementById('introBack').addEventListener('click',()=>{introView='grid';activeCol=null;renderIntro();});
-  grid.querySelectorAll('.c-row').forEach(el=>el.addEventListener('click',()=>openDetail(rows[parseInt(el.dataset.i)])));
+  bindColRowEvents(grid,rows);
   loadCSDB().then(()=>{
     document.querySelectorAll('.c-row').forEach(el=>{
       const it=rows[parseInt(el.dataset.i)];
-      el.innerHTML=rowHTML(it);
+      if(it)el.innerHTML=rowHTML(it);
     });
-    grid.querySelectorAll('.c-row').forEach(el=>el.addEventListener('click',()=>openDetail(rows[parseInt(el.dataset.i)])));
   });
 }
 function rowHTML(it){
   const cs=CSMAP[it.imdbId]||{};
   const info=oc[it.imdbId]||{};
-  const poster=cs.p||info.poster||'';
   const plot=cs.pl||info.plot||'';
   const links=(it.links||[]).length+(it.seasons||[]).reduce((a,s)=>a+(s.links||[]).length,0);
   const isShow=it.type==='series'||it.type==='anime';
@@ -1500,18 +1592,28 @@ function rowHTML(it){
     '<div class="c-info">'+
       '<div class="c-t">'+esc(it.title)+'</div>'+
       '<div class="c-meta">'+
-        (it.rating?'<span class="cb cb-r">⭐ '+esc(it.rating)+'</span>':'')+
+        (it.rating?'<span class="cb cb-r">'+IC.star+' '+esc(it.rating)+'</span>':'')+
         (it.year?'<span class="cb cb-y">'+esc(it.year)+'</span>':'')+
         '<span class="cb cb-t">'+(it.type==='anime'?'انیمه':(isShow?'سریال':'فیلم'))+'</span>'+
       '</div>'+
       (plot?'<div class="c-plot">'+esc(plot.length>160?plot.slice(0,160)+'…':plot)+'</div>':'')+
-      (links?'<div class="c-dlcount">⬇ '+links+' لینک دانلود — برای مشاهده کلیک کنید</div>':'<div class="c-dlcount" style="color:var(--text3)">لینک دانلود موجود نیست</div>')+
+      (links?'<div class="c-dlcount">'+IC.dl+' '+links+' لینک دانلود (برای مشاهده کلیک کنید)</div>':'<div class="c-dlcount" style="color:var(--text3)">لینک دانلود موجود نیست</div>')+
     '</div>';
 }
-// Modal close
-document.getElementById('mClose').addEventListener('click',()=>{document.getElementById('modalOv').hidden=true;});
-document.getElementById('modalOv').addEventListener('click',e=>{if(e.target.id==='modalOv')document.getElementById('modalOv').hidden=true;});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('modalOv').hidden=true;});
+// Modal close & Escape handling
+document.getElementById('mClose').addEventListener('click',closeDetailModal);
+document.getElementById('modalOv').addEventListener('click',e=>{if(e.target.id==='modalOv')closeDetailModal();});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(!document.getElementById('dlOv').hidden){closeDlDialog();return;}
+    if(!document.getElementById('modalOv').hidden){closeDetailModal();return;}
+    const ih=document.getElementById('iosHelp');
+    if(ih&&ih.classList.contains('show'))ih.classList.remove('show');
+  }
+});
+
+// Auto-load on page load
+autoLoad();
 
 // ===== PWA Install =====
 let deferredPrompt=null;
@@ -1531,8 +1633,9 @@ function maybeShowInstallBanner(){
   if(!banner)return;
   if(isInstalled())return;
   if(sessionStorage.getItem('installDismissed')==='1')return;
+  if(!deferredPrompt&&!isIOS)return;
   if(isIOS){
-    document.getElementById('ibDesc').innerHTML='افزودن به صفحه اصلی — <b>آفلاین هم کار می‌کنه</b>';
+    document.getElementById('ibDesc').innerHTML='افزودن به صفحه اصلی (<b>آفلاین هم کار می‌کند</b>)';
     document.getElementById('installBtn').textContent='راهنما';
   }
   setTimeout(()=>banner.classList.add('show'),1500);
@@ -1544,8 +1647,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const closeBtn=document.getElementById('installClose');
   const iosHelp=document.getElementById('iosHelp');
   if(!banner)return;
-  // auto-show even without beforeinstallprompt (Chrome fires it; iOS & some browsers dont)
-  if(!deferredPrompt)maybeShowInstallBanner();
+  if(isIOS)maybeShowInstallBanner();
   if(installBtn)installBtn.addEventListener('click',async()=>{
     if(isIOS){
       if(iosHelp)iosHelp.classList.add('show');
@@ -1559,15 +1661,28 @@ document.addEventListener('DOMContentLoaded',()=>{
         try{localStorage.setItem('cinemaInstalled','1');}catch(e){}
       }
       deferredPrompt=null;
+    }else if(iosHelp){
+      iosHelp.classList.add('show');
     }
   });
   if(closeBtn)closeBtn.addEventListener('click',()=>{
     banner.classList.remove('show');
-    sessionStorage.setItem('installDismissed','1');
+    try{sessionStorage.setItem('installDismissed','1');}catch(e){}
   });
   if(iosHelp){
-      document.getElementById('hdrInstall').addEventListener('click',()=>{if(isIOS){if(iosHelp)iosHelp.classList.add('show');}else if(deferredPrompt){deferredPrompt.prompt();}else{maybeShowInstallBanner();}});
-document.getElementById('iosHelpClose').addEventListener('click',()=>iosHelp.classList.remove('show'));
+    document.getElementById('hdrInstall').addEventListener('click',async()=>{
+      if(isInstalled()){
+        toast('اپلیکیشن سینما قبلاً نصب شده است','s');
+      }else if(deferredPrompt){
+        deferredPrompt.prompt();
+        const{outcome}=await deferredPrompt.userChoice;
+        if(outcome==='accepted')try{localStorage.setItem('cinemaInstalled','1');}catch(e){}
+        deferredPrompt=null;
+      }else{
+        iosHelp.classList.add('show');
+      }
+    });
+    document.getElementById('iosHelpClose').addEventListener('click',()=>iosHelp.classList.remove('show'));
     iosHelp.addEventListener('click',e=>{if(e.target===iosHelp)iosHelp.classList.remove('show');});
   }
   window.addEventListener('appinstalled',()=>{
@@ -1577,41 +1692,45 @@ document.getElementById('iosHelpClose').addEventListener('click',()=>iosHelp.cla
 });
 </script>
 <!-- PWA Update Banner (new version available) -->
-<div class="update-banner" id="updateBanner">
-  <div class="ub-icon">🆕</div>
+<div class="update-banner" id="updateBanner" role="status" aria-live="polite">
+  <div class="ub-icon" aria-hidden="true">
+    <svg class="ic-svg" width="22" height="22" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+  </div>
   <div class="ub-text">
-    <div class="ub-title">نسخه جدید موجوده!</div>
+    <div class="ub-title">نسخه جدید آماده است</div>
     <div class="ub-desc">برای دریافت آخرین امکانات، صفحه را به‌روزرسانی کنید</div>
   </div>
   <div class="ub-btns">
-    <button type="button" class="ub-btn ub-apply" id="updateApply">🔄 به‌روزرسانی</button>
+    <button type="button" class="ub-btn ub-apply" id="updateApply">به‌روزرسانی</button>
     <button type="button" class="ub-btn ub-close" id="updateClose">بعداً</button>
   </div>
 </div>
 <!-- PWA Install Banner -->
-<div class="install-banner" id="installBanner">
+<div class="install-banner" id="installBanner" role="region" aria-label="نصب برنامه سینما">
   <img class="ib-icon" src="icons/icon-192.png" alt="سینما" width="52" height="52">
   <div class="ib-text">
     <div class="ib-title">نصب برنامه سینما</div>
-    <div class="ib-desc" id="ibDesc">دسترسی سریع با یک لمس — <b>آفلاین هم کار می‌کنه</b></div>
+    <div class="ib-desc" id="ibDesc">دسترسی سریع با یک لمس (<b>آفلاین هم کار می‌کند</b>)</div>
   </div>
   <div class="ib-btns">
-    <button type="button" class="ib-btn ib-install" id="installBtn">⬇ نصب</button>
+    <button type="button" class="ib-btn ib-install" id="installBtn">نصب برنامه</button>
     <button type="button" class="ib-btn ib-close" id="installClose">بعداً</button>
   </div>
 </div>
 
-<!-- iOS install help modal -->
-<div class="ios-help" id="iosHelp">
+<!-- Install help modal -->
+<div class="ios-help" id="iosHelp" role="dialog" aria-modal="true" aria-labelledby="iosHelpTitle">
   <div class="ios-help-box">
-    <div class="ios-help-ic">📲</div>
-    <div class="ios-help-title">افزودن به صفحه اصلی</div>
-    <div class="ios-help-steps">
-      <div class="ios-help-step">1️⃣ دکمه <b>اشتراک‌گذاری</b> را در نوار پایین مرورگر بزنید</div>
-      <div class="ios-help-step">2️⃣ گزینه <b>Add to Home Screen</b> را انتخاب کنید</div>
-      <div class="ios-help-step">3️⃣ سپس <b>Add</b> را بزنید — تمام! 🎉</div>
+    <div class="ios-help-ic" aria-hidden="true">
+      <svg class="ic-svg" width="36" height="36" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
     </div>
-    <button type="button" class="ib-btn ib-install" id="iosHelpClose">باشه، فهمیدم</button>
+    <div class="ios-help-title" id="iosHelpTitle">نصب برنامه روی دستگاه</div>
+    <div class="ios-help-steps">
+      <div class="ios-help-step">۱. در مرورگر موبایل (Safari / Chrome) منوی <b>اشتراک‌گذاری یا تنظیمات</b> را باز کنید</div>
+      <div class="ios-help-step">۲. گزینه <b>Add to Home Screen</b> یا <b>Install App</b> را انتخاب کنید</div>
+      <div class="ios-help-step">۳. در دسکتاپ، آیکون نصب در نوار آدرس مرورگر را بزنید</div>
+    </div>
+    <button type="button" class="ib-btn ib-install" id="iosHelpClose">متوجه شدم</button>
   </div>
 </div>
 <script>
@@ -1621,6 +1740,7 @@ if('serviceWorker' in navigator){
   let updateShown=false;
 
   function showUpdateBanner(){
+    try{if(sessionStorage.getItem('updateDismissed')==='1')return;}catch(e){}
     const b=document.getElementById('updateBanner');
     if(!b||updateShown)return;
     updateShown=true;
@@ -1638,18 +1758,15 @@ if('serviceWorker' in navigator){
 
   navigator.serviceWorker.register('sw.js').then(reg=>{
     swReg=reg;
-    // A newer service worker started installing
     reg.addEventListener('updatefound',()=>{
       const nw=reg.installing;
       if(!nw)return;
       nw.addEventListener('statechange',()=>{
-        // installed + an old worker already controls the page = update available
         if(nw.state==='installed'&&navigator.serviceWorker.controller)showUpdateBanner();
       });
     });
   }).catch(e=>console.log('SW error:',e));
 
-  // When the new worker takes control, reload to load the fresh version
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
     hideUpdateBanner();
     window.location.reload();
@@ -1661,7 +1778,6 @@ if('serviceWorker' in navigator){
     if(apply)apply.addEventListener('click',()=>{
       const w=swReg&&(swReg.waiting||swReg.installing);
       if(w){
-        // The worker itself clears ALL caches, then activates + page reloads
         w.postMessage({type:'SKIP_WAITING'});
       }else{
         hideUpdateBanner();

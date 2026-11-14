@@ -85,8 +85,8 @@ function cleanName(dir) {
 }
 
 function extractYear(dir) {
-  const m = dir.match(/(\d{4})/);
-  return m ? m[1] : '';
+  const matches = String(dir).match(/\b(18[89]\d|19\d\d|20[0-2]\d)\b/g);
+  return matches && matches.length ? matches[matches.length - 1] : '';
 }
 
 const isMedia = (fn) => /\.(mkv|mp4|avi)$/i.test(fn);
