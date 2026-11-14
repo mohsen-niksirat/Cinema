@@ -8,7 +8,10 @@
 # Coexists with the GitHub Actions crawler: pulls with rebase first, and if the
 # push races with an Actions commit it rebases on top (-X theirs) and retries.
 
-$ErrorActionPreference = 'Stop'
+# NOTE: $ErrorActionPreference must stay 'Continue' — in PS 5.1 with 'Stop', native
+# stderr lines (git fetch progress, node console.error) become terminating errors
+# when captured via 2>&1. Every native call below is checked via $LASTEXITCODE.
+$ErrorActionPreference = 'Continue'
 $repo = Split-Path -Parent $PSScriptRoot          # repo root (parent of scripts\)
 Set-Location $repo
 
@@ -31,7 +34,7 @@ try {
   Log 'git pull --rebase origin main ...'
   $pullOut = & git pull --rebase origin main 2>&1
   if ($LASTEXITCODE -ne 0) {
-    Log "pull failed: $($pullOut -join ' ')"
+    Log ("pull failed: " + (($pullOut | ForEach-Object { "$_" }) -join ' | '))
     throw 'git pull failed'
   }
 
