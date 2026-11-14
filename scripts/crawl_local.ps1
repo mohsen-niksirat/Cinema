@@ -20,13 +20,13 @@ if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir | Out
 $log = Join-Path $logDir 'crawl_local.log'
 
 function Log($m) {
-  ("{0}  {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $m) | Add-Content -Path $log
+  ("{0}  {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $m) | Add-Content -Path $log -Encoding UTF8
 }
 
 # keep the log small
 if ((Test-Path $log) -and ((Get-Item $log).Length -gt 1MB)) {
   $tail = Get-Content $log -Tail 500
-  Set-Content -Path $log -Value $tail
+  Set-Content -Path $log -Value $tail -Encoding UTF8
 }
 
 Log '=== local crawl start ==='
